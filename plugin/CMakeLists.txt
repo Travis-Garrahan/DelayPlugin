@@ -12,8 +12,11 @@ juce_add_plugin(${PROJECT_NAME}
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE
     FORMATS VST3
-    VERSION 0.0.1
+    VERSION 0.1.0
+    COPY_PLUGIN_AFTER_BUILD TRUE
     PRODUCT_NAME "Simple Delay"
+    PLUGIN_MANUFACTURER_CODE Mcmp
+    PLUGIN_CODE Expl
 )
 
 # set source files of plugin project
