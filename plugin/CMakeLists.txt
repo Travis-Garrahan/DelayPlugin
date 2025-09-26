@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.0)
-project(JUCE_Audio_Player)
+project(Simple_Delay VERSION 1.00)
 
 # Adding a directory with the library/ application name as a subfolder
 # of the include folder is good practice to help avoid name clashes later on

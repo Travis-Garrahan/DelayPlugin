@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.0)
-project(JUCE_Audio_Player)
+project(Simple_Delay VERSION 1.00)
 
 set(CMAKE_CXX_STANDARD 20)
 
