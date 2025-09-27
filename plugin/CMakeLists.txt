@@ -13,7 +13,7 @@ juce_add_plugin(${PROJECT_NAME}
     NEEDS_MIDI_OUTPUT FALSE
     FORMATS VST3
     VERSION 0.1.0
-    COPY_PLUGIN_AFTER_BUILD TRUE
+    COPY_PLUGIN_AFTER_BUILD TRUE # this will install the plugin into system VST folder
     PRODUCT_NAME "Simple Delay"
     PLUGIN_MANUFACTURER_CODE Mcmp
     PLUGIN_CODE Expl
@@ -47,9 +47,6 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_VST3_CAN_REPLACE_VST2=0
 )
 
-# Enables strict c++ warnings and treats warning as errors.
-# This needs to be set up only for your projects, not 3rd party.
-set_source_files_properties(${SOURCE_FILE} PROPERTIES COMPILE_OPTIONS "${PROJECT_WARNINGS_CXX}")
 
 # In visual studio this command provides a nice grouping of source files in "filters"
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/..)
