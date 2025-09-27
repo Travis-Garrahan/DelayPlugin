@@ -145,11 +145,23 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
+    
+    // For each input channel
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-        auto* channelData = buffer.getWritePointer (channel);
-        juce::ignoreUnused (channelData);
-        // ..do something to the data...
+	// Check in case there are more input channels than output channels
+        if (channel < totalNumOutputChannels) 
+	{
+            auto* inBuffer = buffer.getReadPointer(channel);
+            auto* outBuffer = buffer.getWritePointer(channel);
+          	
+	    // Loop through samples in current channel 
+            for (auto sample = 0; sample < buffer.getNumSamples(); ++sample)
+            {
+		// Process the sample. Temporarily just squaring it
+                outBuffer[sample] = inBuffer[sample] * inBuffer[sample];
+            }
+	}
     }
 }
 
