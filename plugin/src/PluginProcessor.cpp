@@ -10,7 +10,7 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ), apvts (*this, nullptr, "Parameters", createParameters())
 {
 }
 
@@ -197,4 +197,17 @@ void AudioPluginAudioProcessor::setStateInformation (const void* data, int sizeI
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new AudioPluginAudioProcessor();
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::createParameters()
+{
+    // List of ranged audio parameters 
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params; 
+
+    // Args: String parameterID, String parameterName, float minValue, float maxValue, float defaultValue
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("DELAY_TIME", "Time", 1.f, 1000.f, 500.f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("FEEDBACK", "Feedback", 0.f, 0.99f, 0.5f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("MIX", "Mix", 0.f, 1.f, 0.5f));
+
+    return { params.begin(), params.end() };
 }

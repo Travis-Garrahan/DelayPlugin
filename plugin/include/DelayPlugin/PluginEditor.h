@@ -19,10 +19,15 @@ private:
     AudioPluginAudioProcessor& processorRef;
     
     juce::Slider delayTimeSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayTimeSliderAttachment;
     juce::Label delayTimeLabel;
+    
     juce::Slider feedbackSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> feedbackSliderAttachment;
     juce::Label feedbackLabel;
+
     juce::Slider mixSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mixSliderAttachment;
     juce::Label mixLabel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
