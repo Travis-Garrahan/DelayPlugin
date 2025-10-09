@@ -20,9 +20,9 @@ juce_add_plugin(${PROJECT_NAME}
 )
 
 # set source files of plugin project
-set(SOURCE_FILES src/PluginEditor.cpp src/PluginProcessor.cpp)
+set(SOURCE_FILES src/PluginEditor.cpp src/PluginProcessor.cpp src/CircularBuffer.cpp)
 # optional; includes header files in project files tree in Visual studio
-set(HEADER_FILES ${INCLUDE_DIR}/PluginEditor.h ${INCLUDE_DIR}/PluginProcessor.h)
+set(HEADER_FILES ${INCLUDE_DIR}/PluginEditor.h ${INCLUDE_DIR}/PluginProcessor.h ${INCLUDE_DIR}/CircularBuffer.h)
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCE_FILES} ${HEADER_FILES})
 
 # set include directory
