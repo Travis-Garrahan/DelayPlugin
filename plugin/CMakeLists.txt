@@ -11,7 +11,7 @@ juce_add_plugin(${PROJECT_NAME}
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE
-    FORMATS VST3
+    FORMATS VST3 Standalone
     VERSION 0.1.0
     COPY_PLUGIN_AFTER_BUILD TRUE # this will install the plugin into system VST folder
     PRODUCT_NAME "Simple Delay"

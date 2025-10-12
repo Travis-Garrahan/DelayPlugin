@@ -88,6 +88,23 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
 {
     // Use this method as the place to do any pre-playback
     // initialization that you need..
+    currentSampleRate = sampleRate;
+    float delayTimeSeconds = 0.5f;
+    delayInSamples = static_cast<int> (delayTimeSeconds * currentSampleRate);
+
+    // find next power of 2 for buffer size
+    int bufferSize = 1;
+    while (bufferSize < delayInSamples + samplesPerBlock)
+        bufferSize <<= 1;
+
+    delayBuffers.clear();
+    delayBuffers.reserve (static_cast<size_t>(getTotalNumOutputChannels()));
+
+    for (int ch = 0; ch < getTotalNumOutputChannels(); ++ch)
+    {
+        delayBuffers.emplace_back (bufferSize, 0.0f);
+    }
+
     juce::ignoreUnused (sampleRate, samplesPerBlock);
 }
 
@@ -95,6 +112,10 @@ void AudioPluginAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
+    for (auto& buffer : delayBuffers)
+    {
+        buffer.clear();
+    }
 }
 
 bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -130,39 +151,28 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+    const int numSamples = buffer.getNumSamples();
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-
-    // For each input channel
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+    for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
     {
-	    // Check in case there are more input channels than output channels
-        if (channel < totalNumOutputChannels) 
+        auto* channelData = buffer.getWritePointer(channel);
+        auto& delayBuffer = delayBuffers[channel];
+
+        for (int i = 0; i < numSamples; ++i)
         {
-            auto* inBuffer = buffer.getReadPointer(channel);
-            auto* outBuffer = buffer.getWritePointer(channel);
-          	
-	        // Loop through samples in current channel 
-            for (auto sample = 0; sample < buffer.getNumSamples(); ++sample)
-            {
-		        // Process the sample. Temporarily just squaring it
-                outBuffer[sample] = inBuffer[sample] * inBuffer[sample];
-            }
-	    }
+            float in = channelData[i];
+            float delayed = delayBuffer[delayInSamples]; // [N] = n samples ago
+
+            // output delayed effect mixed with dry
+            channelData[i] = 0.5f * in + 0.5f * delayed;
+
+            // Push current sample into buffer
+            delayBuffer.push(in);
+
+        }
     }
+
+
 }
 
 //==============================================================================
