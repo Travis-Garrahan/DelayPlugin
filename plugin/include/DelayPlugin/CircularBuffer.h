@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <vector>
 #include <cassert>
+#include <juce_core/juce_core.h>
 
 
 #endif //SIMPLE_DELAY_CIRCULARBUFFER_H

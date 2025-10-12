@@ -89,14 +89,17 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     // Use this method as the place to do any pre-playback
     // initialization that you need..
     currentSampleRate = sampleRate;
-    float delayTimeSeconds = 0.5f;
-    delayInSamples = static_cast<int> (delayTimeSeconds * currentSampleRate);
 
-    // find next power of 2 for buffer size
+    const float MAX_DELAY_SECONDS = 2.0f;
+    int maxDelaySamples = static_cast<int> (MAX_DELAY_SECONDS * sampleRate);
+
+    // find next power of 2 for buffer size		
     int bufferSize = 1;
-    while (bufferSize < delayInSamples + samplesPerBlock)
+    while (bufferSize < maxDelaySamples)    //while (bufferSize < delayInSamples + samplesPerBlock)
         bufferSize <<= 1;
-
+    
+    //int bufferSize = static_cast<int>(std::pow(2, std::ceil(std::log2(maxDelaySamples))));
+    
     delayBuffers.clear();
     delayBuffers.reserve (static_cast<size_t>(getTotalNumOutputChannels()));
 
@@ -145,6 +148,10 @@ bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
 void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                               juce::MidiBuffer& midiMessages)
 {
+    //float delayTimeSeconds = *apvts.getRawParameterValue("DELAY_TIME");    
+    float delayTimeSeconds = 0.5f;
+    float delayInSamples = static_cast<int>(delayTimeSeconds * currentSampleRate);
+
     juce::ignoreUnused (midiMessages);
 
     juce::ScopedNoDenormals noDenormals;
@@ -161,18 +168,15 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         for (int i = 0; i < numSamples; ++i)
         {
             float in = channelData[i];
-            float delayed = delayBuffer[delayInSamples]; // [N] = n samples ago
+            float delayed = delayBuffer[delayBuffer.size - delayInSamples]; // [N] = n samples ago
 
             // output delayed effect mixed with dry
             channelData[i] = 0.5f * in + 0.5f * delayed;
 
             // Push current sample into buffer
-            delayBuffer.push(in);
-
+            delayBuffer.push(channelData[i]);    //delayBuffer.push(in);
         }
     }
-
-
 }
 
 //==============================================================================

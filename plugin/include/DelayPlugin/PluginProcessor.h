@@ -45,7 +45,7 @@ public:
 
 private:
     double currentSampleRate {44100};
-    int delayInSamples{};
+    //int delayInSamples{};
 
     // One circular buffer per channel
     std::vector<CircularBuffer<float>> delayBuffers;
