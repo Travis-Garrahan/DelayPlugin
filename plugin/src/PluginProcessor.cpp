@@ -150,7 +150,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 {
     //float delayTimeSeconds = *apvts.getRawParameterValue("DELAY_TIME");    
     float delayTimeSeconds = 0.5f;
-    float delayInSamples = static_cast<int>(delayTimeSeconds * currentSampleRate);
+    int delayInSamples = static_cast<int>(delayTimeSeconds * currentSampleRate);
 
     juce::ignoreUnused (midiMessages);
 
