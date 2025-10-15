@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CircularBuffer.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 
 //==============================================================================
@@ -45,7 +46,15 @@ public:
     juce::AudioProcessorValueTreeState apvts;
 
 private:
+
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
+
+
+    double currentSampleRate {44100};
+    //int delayInSamples{};
+
+    // One circular buffer per channel
+    std::vector<CircularBuffer<float>> delayBuffers;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)

@@ -11,7 +11,7 @@ juce_add_plugin(${PROJECT_NAME}
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE
-    FORMATS VST3
+    FORMATS VST3 Standalone
     VERSION 0.1.0
     COPY_PLUGIN_AFTER_BUILD TRUE # this will install the plugin into system VST folder
     PRODUCT_NAME "Simple Delay"
@@ -20,9 +20,9 @@ juce_add_plugin(${PROJECT_NAME}
 )
 
 # set source files of plugin project
-set(SOURCE_FILES src/PluginEditor.cpp src/PluginProcessor.cpp)
+set(SOURCE_FILES src/PluginEditor.cpp src/PluginProcessor.cpp src/CircularBuffer.cpp)
 # optional; includes header files in project files tree in Visual studio
-set(HEADER_FILES ${INCLUDE_DIR}/PluginEditor.h ${INCLUDE_DIR}/PluginProcessor.h)
+set(HEADER_FILES ${INCLUDE_DIR}/PluginEditor.h ${INCLUDE_DIR}/PluginProcessor.h ${INCLUDE_DIR}/CircularBuffer.h)
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCE_FILES} ${HEADER_FILES})
 
 # set include directory
