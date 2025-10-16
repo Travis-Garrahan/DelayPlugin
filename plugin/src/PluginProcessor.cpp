@@ -148,11 +148,14 @@ bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
 void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                               juce::MidiBuffer& midiMessages)
 {
-    //float delayTimeSeconds = *apvts.getRawParameterValue("DELAY_TIME");    
-    float delayTimeSeconds = 0.5f;
-    int delayInSamples = static_cast<int>(delayTimeSeconds * currentSampleRate);
-
     juce::ignoreUnused (midiMessages);
+
+    // Get current slider values
+    float mix = *apvts.getRawParameterValue("MIX");
+    float feedback = *apvts.getRawParameterValue("FEEDBACK");
+    
+    float delayTimeSeconds = *apvts.getRawParameterValue("DELAY_TIME") / 1000.0f;    
+    int delayInSamples = static_cast<int>(delayTimeSeconds * currentSampleRate);
 
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
@@ -167,14 +170,17 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
         for (int i = 0; i < numSamples; ++i)
         {
+            // Input sample
             float in = channelData[i];
-            float delayed = delayBuffer[delayBuffer.size - delayInSamples]; // [N] = n samples ago
 
-            // output delayed effect mixed with dry
-            channelData[i] = 0.5f * in + 0.5f * delayed;
+            // Get delayed output and apply feedback gain
+            float delayed = feedback * delayBuffer[delayBuffer.size - delayInSamples];
 
-            // Push current sample into buffer
-            delayBuffer.push(channelData[i]);    //delayBuffer.push(in);
+            // Mix incomming audio with delayed output and feed it back into the delay buffer
+            delayBuffer.push(in + delayed);
+            
+            // Mix dry signal with wet signal             
+            channelData[i] = (1.0f - mix) * in + mix * delayed;	    
         }
     }
 }
