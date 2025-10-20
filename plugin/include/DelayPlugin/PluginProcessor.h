@@ -50,15 +50,13 @@ private:
 
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 
-
-    double currentSampleRate {44100};
-    //int delayInSamples{};
+    double m_sampleRate {44100};
 
     // One circular buffer per channel
-    std::vector<CircularBuffer<float>> delayBuffers;
+    std::vector<CircularBuffer<float>> m_delayBuffers;
 
     // One lowpass filter per channel
-    std::vector<LowPass1P<float>> lowPassFilters;
+    std::vector<LowPass1P<float>> m_lowPassFilters;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)

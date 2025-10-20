@@ -88,41 +88,35 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
 {
     // Initialization before playback 
     
-    currentSampleRate = sampleRate;
+    m_sampleRate = sampleRate;
 
     // Initialize delay buffers
     const float MAX_DELAY_SECONDS = 2.0f;
-    int maxDelaySamples = static_cast<int> (MAX_DELAY_SECONDS * sampleRate);
+    int maxDelaySamples = static_cast<int>(MAX_DELAY_SECONDS * sampleRate);
 
-    // find next power of 2 for buffer size		
+    // Find next power of 2 for buffer size		
     int bufferSize = 1;
-    while (bufferSize < maxDelaySamples)    //while (bufferSize < delayInSamples + samplesPerBlock)
+    while (bufferSize < maxDelaySamples) 
         bufferSize <<= 1;
     
-    //int bufferSize = static_cast<int>(std::pow(2, std::ceil(std::log2(maxDelaySamples))));
-    
-    delayBuffers.clear();
-    delayBuffers.reserve (static_cast<size_t>(getTotalNumOutputChannels()));
+    m_delayBuffers.clear();
+    m_delayBuffers.reserve(static_cast<size_t>(getTotalNumOutputChannels()));
 
     for (int ch = 0; ch < getTotalNumOutputChannels(); ++ch)
-    {
-        delayBuffers.emplace_back (bufferSize, 0.0f);
-    }
+        m_delayBuffers.emplace_back(bufferSize, 0.0f);
 
     // Initialize lowpass filters
     for (int ch = 0; ch < getTotalNumOutputChannels(); ++ch)
-    {
-        lowPassFilters.emplace_back (sampleRate, 1.0f); // Initialize cutoff freq to 1 Hz
-    } 
+        m_lowPassFilters.emplace_back(static_cast<unsigned int>(sampleRate), 1.0f); // Initialize cutoff freq to 1 Hz
 
-    juce::ignoreUnused (samplesPerBlock);
+    juce::ignoreUnused(samplesPerBlock);
 }
 
 void AudioPluginAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
-    for (auto& buffer : delayBuffers)
+    for (auto& buffer : m_delayBuffers)
     {
         buffer.clear();
     }
@@ -155,40 +149,31 @@ bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
 void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                               juce::MidiBuffer& midiMessages)
 {
-    juce::ignoreUnused (midiMessages);
+    juce::ignoreUnused(midiMessages);
+    juce::ScopedNoDenormals noDenormals;
 
-    // Get current slider values.
-    // These values are read once per block.
+    // Get current slider values. These values are read once per block.
     float mix = *apvts.getRawParameterValue("MIX");
     float feedback = *apvts.getRawParameterValue("FEEDBACK");
-    
     float delayTimeSeconds = *apvts.getRawParameterValue("DELAY_TIME") / 1000.0f;    
-    //int delayInSamples = static_cast<int>(delayTimeSeconds * currentSampleRate);
-    
-
-    juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
-
-    const int numSamples = buffer.getNumSamples();
 
     for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
     {
         auto* channelData = buffer.getWritePointer(channel);
-        auto& delayBuffer = delayBuffers[channel];
-        auto& lowPass = lowPassFilters[channel];
+        auto& delayBuffer = m_delayBuffers[channel];
+        auto& lowPass = m_lowPassFilters[channel];
 
-        for (int i = 0; i < numSamples; ++i)
+        for (int i = 0; i < buffer.getNumSamples(); ++i)
         {
-            // Apply smoothing to delay time slider value
+            // Apply smoothing to delay time slider value 
             float currentDelayTimeSeconds = lowPass.getNextSample(delayTimeSeconds);
-            int delayInSamples = static_cast<int>(currentDelayTimeSeconds * currentSampleRate);
+            int delayInSamples = static_cast<int>(currentDelayTimeSeconds * m_sampleRate);
             
             // Input sample
             float in = channelData[i];
 
             // Get delayed output and apply feedback gain
-            float delayed = feedback * delayBuffer[delayBuffer.size - delayInSamples];
+            float delayed = feedback * delayBuffer[static_cast<int>(delayBuffer.size) - delayInSamples];
 
             // Mix incomming audio with delayed output and feed it back into the delay buffer
             delayBuffer.push(in + delayed);
