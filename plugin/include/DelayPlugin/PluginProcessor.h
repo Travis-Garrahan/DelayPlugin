@@ -43,12 +43,11 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-    
-    juce::AudioProcessorValueTreeState apvts;
+
+    juce::AudioProcessorValueTreeState& getAPVTS();
 
 private:
 
-    juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 
     double m_sampleRate {44100};
 
@@ -58,6 +57,10 @@ private:
     // One lowpass filter per channel
     std::vector<LowPass1P<float>> m_lowPassFilters;
 
+    juce::AudioProcessorValueTreeState m_apvts;
+
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
+    
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
 };

@@ -13,6 +13,8 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     setSize(400, 300);
 
+    juce::AudioProcessorValueTreeState& apvts = processorRef.getAPVTS();
+
     // Delay Time
     delayTimeSlider.setNumDecimalPlacesToDisplay(0);
     //delayTimeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, textBoxWidth, delayTimeSlider.getTextBoxHeight());
@@ -21,7 +23,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     addAndMakeVisible(delayTimeSlider);
 
     // Attach the delay Time slider to the AudioProcessorValueTreeState
-    delayTimeSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.apvts, 
+    delayTimeSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, 
         "DELAY_TIME", delayTimeSlider);
 
     delayTimeLabel.setText("Time", juce::dontSendNotification);
@@ -36,7 +38,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     feedbackSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
     addAndMakeVisible(feedbackSlider);
 
-    feedbackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.apvts, 
+    feedbackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, 
         "FEEDBACK", feedbackSlider);
 
     feedbackLabel.setText("Feedback", juce::dontSendNotification);
@@ -53,7 +55,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     mixSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
     addAndMakeVisible(mixSlider);
 
-    mixSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.apvts, 
+    mixSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, 
         "MIX", mixSlider);
 
     mixLabel.setText("Mix", juce::dontSendNotification);

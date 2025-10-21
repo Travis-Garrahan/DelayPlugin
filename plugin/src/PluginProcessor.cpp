@@ -10,7 +10,7 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       ), apvts (*this, nullptr, "Parameters", createParameters())
+                       ), m_apvts (*this, nullptr, "Parameters", createParameters())
 {
 }
 
@@ -153,9 +153,9 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::ScopedNoDenormals noDenormals;
 
     // Get current slider values. These values are read once per block.
-    float mix = *apvts.getRawParameterValue("MIX");
-    float feedback = *apvts.getRawParameterValue("FEEDBACK");
-    float delayTimeSeconds = *apvts.getRawParameterValue("DELAY_TIME") / 1000.0f;    
+    float mix = *m_apvts.getRawParameterValue("MIX");
+    float feedback = *m_apvts.getRawParameterValue("FEEDBACK");
+    float delayTimeSeconds = *m_apvts.getRawParameterValue("DELAY_TIME") / 1000.0f;    
 
     for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
     {
@@ -229,4 +229,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     params.push_back(std::make_unique<juce::AudioParameterFloat>("MIX", "Mix", 0.f, 1.f, 0.5f));
 
     return { params.begin(), params.end() };
+}
+
+juce::AudioProcessorValueTreeState& AudioPluginAudioProcessor::getAPVTS()
+{
+    return m_apvts;
 }
