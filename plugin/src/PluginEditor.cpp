@@ -63,6 +63,9 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     addAndMakeVisible(mixLabel);
     //mixLabel.attachToComponent(&mixSlider, true);
 
+    addAndMakeVisible(pingPongToggleButton);
+    pingPongToggleButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts,
+        "IS_PING_PONG_ENABLED", pingPongToggleButton);
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
@@ -97,4 +100,6 @@ void AudioPluginAudioProcessorEditor::resized()
 
     feedbackSlider.setBounds(getWidth() / 2 - sliderWidth / 2, getHeight() / 2, sliderWidth, sliderHeight);
     feedbackLabel.setBounds(getWidth() / 2 - sliderWidth / 2, getHeight() / 2 + sliderHeight, labelWidth, labelHeight);
+
+    pingPongToggleButton.setBounds(0, (int)(0.9 * getHeight()), 20, 20);
 }

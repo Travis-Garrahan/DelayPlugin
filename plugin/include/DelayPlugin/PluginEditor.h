@@ -30,5 +30,9 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mixSliderAttachment;
     juce::Label mixLabel;
 
+    juce::ToggleButton pingPongToggleButton;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> pingPongToggleButtonAttachment;
+    juce::Label pingPongLabel;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };

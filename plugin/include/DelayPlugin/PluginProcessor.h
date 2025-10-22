@@ -54,8 +54,8 @@ private:
     // One circular buffer per channel
     std::vector<CircularBuffer<float>> m_delayBuffers;
 
-    // One lowpass filter per channel
-    std::vector<LowPass1P<float>> m_lowPassFilters;
+    // Lowpass filter for smoothing delay time input value
+    LowPass1P<float> m_lowPass;
 
     juce::AudioProcessorValueTreeState m_apvts;
 
