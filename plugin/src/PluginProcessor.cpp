@@ -274,7 +274,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     params.push_back(std::make_unique<juce::AudioParameterFloat>("FEEDBACK", "Feedback", 0.f, 0.99f, 0.5f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("MIX", "Mix", 0.f, 1.f, 0.5f));
     
-    params.push_back(std::make_unique<juce::AudioParameterBool>("IS_PING_PONG_ENABLED", "Ping Pong", true));
+    params.push_back(std::make_unique<juce::AudioParameterBool>("IS_PING_PONG_ENABLED", "Ping Pong", false));
     // NOTE: Maybe use juce::AudioParameterChoice instead of bool. Could use "STEREO_MODE" with options 
     // "Normal", "Ping Pong", or "Stereo"
 
