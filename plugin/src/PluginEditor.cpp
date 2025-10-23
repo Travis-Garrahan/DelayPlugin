@@ -66,6 +66,11 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     addAndMakeVisible(pingPongToggleButton);
     pingPongToggleButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts,
         "IS_PING_PONG_ENABLED", pingPongToggleButton);
+
+    addAndMakeVisible(effectToggleButton);
+    effectToggleButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts,
+        "IS_EFFECT_ENABLED", effectToggleButton);
+    addAndMakeVisible(effectLabel);
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
@@ -102,4 +107,8 @@ void AudioPluginAudioProcessorEditor::resized()
     feedbackLabel.setBounds(getWidth() / 2 - sliderWidth / 2, getHeight() / 2 + sliderHeight, labelWidth, labelHeight);
 
     pingPongToggleButton.setBounds(0, (int)(0.9 * getHeight()), 20, 20);
+
+    int toggleButtonWidth = 50;
+    effectToggleButton.setBounds(static_cast<int>(getWidth() * 0.5 - toggleButtonWidth), static_cast<int>(getHeight() * 0.9), 20, 20);
+    effectLabel.setBounds(static_cast<int>(getWidth() * 0.5 - toggleButtonWidth), static_cast<int>(getHeight() * 0.9) - 20, 20, 20);
 }

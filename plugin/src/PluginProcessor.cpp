@@ -164,6 +164,11 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     float feedback = *m_apvts.getRawParameterValue("FEEDBACK");
     float delayTimeSeconds = *m_apvts.getRawParameterValue("DELAY_TIME") / 1000.0f;    
     bool isPingPongEnabled = *m_apvts.getRawParameterValue("IS_PING_PONG_ENABLED");
+    bool isEffectEnabled = *m_apvts.getRawParameterValue("IS_EFFECT_ENABLED");
+
+    // If effect is disabled, set the wet mix to zero. 
+    if (isEffectEnabled == false)
+        mix = 0.0f;
     
     // Get left and right audio buffers. Each buffer contains the input data. 
     // Data is processed by overwriting it.
@@ -176,7 +181,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     // Lowpass filter for smoothing the delay time input value. This is not stereo-dependent 
     // (left and right delay lines should have the same delay time), so we only need one of these.
-    auto& lowPass = m_lowPass; //m_lowPassFilters[0];
+    auto& lowPass = m_lowPass; 
 
     // Loop through each sample
     for (int i = 0; i < buffer.getNumSamples(); ++i)
@@ -277,6 +282,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     params.push_back(std::make_unique<juce::AudioParameterBool>("IS_PING_PONG_ENABLED", "Ping Pong", false));
     // NOTE: Maybe use juce::AudioParameterChoice instead of bool. Could use "STEREO_MODE" with options 
     // "Normal", "Ping Pong", or "Stereo"
+
+    params.push_back(std::make_unique<juce::AudioParameterBool>("IS_EFFECT_ENABLED", "Effect Enabled", true));
 
     return { params.begin(), params.end() };
 }
