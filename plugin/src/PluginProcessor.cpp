@@ -10,7 +10,8 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       ), m_apvts (*this, nullptr, "Parameters", createParameters())
+                       ), m_apvts (*this, nullptr, "Parameters", createParameters()), 
+                          m_lastIsPingPongEnabled(false)
 {
 }
 
@@ -155,7 +156,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::ignoreUnused(midiMessages);
     juce::ScopedNoDenormals noDenormals;
 
-    // Must have 2 channels for ping-pong delay.
+    // Must have 2 channels for ping pong delay.
     if (buffer.getNumChannels() < 2)
         return;
 
@@ -164,6 +165,15 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     float feedback = *m_apvts.getRawParameterValue("FEEDBACK");
     float delayTimeSeconds = *m_apvts.getRawParameterValue("DELAY_TIME") / 1000.0f;    
     bool isPingPongEnabled = *m_apvts.getRawParameterValue("IS_PING_PONG_ENABLED");
+
+    // If ping pong is toggled on/off, clear the delay buffers
+    if (isPingPongEnabled != m_lastIsPingPongEnabled)
+    {
+        for (auto& delayBuffer : m_delayBuffers)
+            delayBuffer.clear();
+
+        m_lastIsPingPongEnabled = isPingPongEnabled;
+    }
     
     // Get left and right audio buffers. Each buffer contains the input data. 
     // Data is processed by overwriting it.
@@ -176,7 +186,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     // Lowpass filter for smoothing the delay time input value. This is not stereo-dependent 
     // (left and right delay lines should have the same delay time), so we only need one of these.
-    auto& lowPass = m_lowPass; //m_lowPassFilters[0];
+    auto& lowPass = m_lowPass;
 
     // Loop through each sample
     for (int i = 0; i < buffer.getNumSamples(); ++i)
@@ -210,16 +220,14 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             // Mix left and right channels down to mono
             float inMono = (inLeft + inRight) / 2.0f;
 
-            // Feed left and right delay buffers into eachother.
-            // Incomming audio will be fed into the left delay.
+            // Feed left and right delay buffers into eachother. Incomming audio will be fed into the left delay.
             delayBufferLeft.push(inMono + delayedRight);
             delayBufferRight.push(delayedLeft);
         }
 	    else
         {
-            // Normal delay mode: Independent feedback loop for each channel.
-            // Mix incomming audio with delayed output and feed it back into 
-            // the delay buffer. 
+            // Normal delay mode: Independent feedback loop for each channel. 
+            // Mix incomming audio with delayed output and feed it back into the delay buffer. 
             delayBufferLeft.push(inLeft + delayedLeft);
             delayBufferRight.push(inRight + delayedRight);
         }
@@ -269,14 +277,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     // List of ranged audio parameters 
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params; 
 
-    // Args: String parameterID, String parameterName, float minValue, float maxValue, float defaultValue
+    // AudioParameterFloat args: String parameterID, String parameterName, float minValue, float maxValue, float defaultValue
     params.push_back(std::make_unique<juce::AudioParameterFloat>("DELAY_TIME", "Time", 1.f, 1000.f, 500.f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("FEEDBACK", "Feedback", 0.f, 0.99f, 0.5f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("MIX", "Mix", 0.f, 1.f, 0.5f));
-    
     params.push_back(std::make_unique<juce::AudioParameterBool>("IS_PING_PONG_ENABLED", "Ping Pong", false));
-    // NOTE: Maybe use juce::AudioParameterChoice instead of bool. Could use "STEREO_MODE" with options 
-    // "Normal", "Ping Pong", or "Stereo"
 
     return { params.begin(), params.end() };
 }

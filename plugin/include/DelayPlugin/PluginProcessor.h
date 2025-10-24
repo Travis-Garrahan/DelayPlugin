@@ -48,7 +48,6 @@ public:
 
 private:
 
-
     double m_sampleRate {44100};
 
     // One circular buffer per channel
@@ -56,6 +55,9 @@ private:
 
     // Lowpass filter for smoothing delay time input value
     LowPass1P<float> m_lowPass;
+    
+    // For clearing delay buffers
+    bool m_lastIsPingPongEnabled;
 
     juce::AudioProcessorValueTreeState m_apvts;
 
