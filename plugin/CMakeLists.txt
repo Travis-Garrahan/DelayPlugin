@@ -19,6 +19,12 @@ juce_add_plugin(${PROJECT_NAME}
     PLUGIN_CODE Expl
 )
 
+# convert images into binary data
+# this will auto generate the binarydata.h juce header file in the build folder
+juce_add_binary_data(DelayBinaryData
+    SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/assets/corrugated-dark-matte-powder-coated-metal-7264-in-architextures.jpg
+)
+
 # set source files of plugin project
 set(SOURCE_FILES src/PluginEditor.cpp src/PluginProcessor.cpp)
 # optional; includes header files in project files tree in Visual studio
@@ -33,6 +39,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/in
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         juce::juce_audio_utils
+        DelayBinaryData
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
