@@ -61,8 +61,8 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     // Background image
-    const int backgroundImageDataSize = BinaryData::brushedsteel6_jpgSize;
-    backgroundImage = juce::ImageCache::getFromMemory(BinaryData::brushedsteel6_jpg, backgroundImageDataSize);
+    const int backgroundImageDataSize = BinaryData::background_jpgSize;
+    backgroundImage = juce::ImageCache::getFromMemory(BinaryData::background_jpg, backgroundImageDataSize);
     g.drawImageAt(backgroundImage, 0, 0);
 
 

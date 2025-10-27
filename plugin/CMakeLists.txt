@@ -22,7 +22,7 @@ juce_add_plugin(${PROJECT_NAME}
 # convert images into binary data
 # this will auto generate the binarydata.h juce header file in the build folder
 juce_add_binary_data(DelayBinaryData
-    SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/assets/brushedsteel6.jpg
+    SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/assets/background.jpg
 )
 
 # set source files of plugin project
