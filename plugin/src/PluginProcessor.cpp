@@ -11,7 +11,8 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
                        ), m_apvts (*this, nullptr, "Parameters", createParameters()), 
-                          m_lastIsPingPongEnabled(false)
+                          m_lastIsPingPongEnabled(false),
+			              m_lastIsBypassEnabled(false)
 {
 }
 
@@ -165,11 +166,20 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     float feedback = *m_apvts.getRawParameterValue("FEEDBACK");
     float delayTimeSeconds = *m_apvts.getRawParameterValue("DELAY_TIME") / 1000.0f;    
     bool isPingPongEnabled = *m_apvts.getRawParameterValue("IS_PING_PONG_ENABLED");
-    bool isEffectEnabled = *m_apvts.getRawParameterValue("IS_EFFECT_ENABLED");
+    bool isBypassEnabled = *m_apvts.getRawParameterValue("IS_BYPASS_ENABLED");
 
-    // If effect is disabled, set the wet mix to zero. 
-    if (isEffectEnabled == false)
-        mix = 0.0f;
+    // If effect bypass is toggled on/off, clear the delay buffers
+    if (isBypassEnabled != m_lastIsBypassEnabled)
+    {
+        for (auto& delayBuffer : m_delayBuffers)
+            delayBuffer.clear();
+
+        m_lastIsBypassEnabled = isBypassEnabled;
+    }
+ 
+    // Return to bypass effect
+    if (isBypassEnabled == true)
+        return;
 
     // If ping pong is toggled on/off, clear the delay buffers
     if (isPingPongEnabled != m_lastIsPingPongEnabled)
@@ -179,7 +189,8 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
         m_lastIsPingPongEnabled = isPingPongEnabled;
     }
-    
+
+   
     // Get left and right audio buffers. Each buffer contains the input data. 
     // Data is processed by overwriting it.
     auto* channelDataLeft = buffer.getWritePointer(0);
@@ -287,8 +298,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     params.push_back(std::make_unique<juce::AudioParameterFloat>("FEEDBACK", "Feedback", 0.f, 0.99f, 0.5f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("MIX", "Mix", 0.f, 1.f, 0.5f));
     params.push_back(std::make_unique<juce::AudioParameterBool>("IS_PING_PONG_ENABLED", "Ping Pong", false));
-
-    params.push_back(std::make_unique<juce::AudioParameterBool>("IS_EFFECT_ENABLED", "Effect Enabled", true));
+    params.push_back(std::make_unique<juce::AudioParameterBool>("IS_BYPASS_ENABLED", "Bypass", false));
 
     return { params.begin(), params.end() };
 }

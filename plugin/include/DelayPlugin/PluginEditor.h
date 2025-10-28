@@ -34,9 +34,9 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> pingPongToggleButtonAttachment;
     juce::Label pingPongLabel;
 
-    juce::ToggleButton effectToggleButton;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> effectToggleButtonAttachment;
-    juce::Label effectLabel;
+    juce::ToggleButton bypassToggleButton;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> bypassToggleButtonAttachment;
+    juce::Label bypassLabel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };

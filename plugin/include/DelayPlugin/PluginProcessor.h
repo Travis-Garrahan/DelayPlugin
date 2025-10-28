@@ -58,6 +58,7 @@ private:
     
     // For clearing delay buffers
     bool m_lastIsPingPongEnabled;
+    bool m_lastIsBypassEnabled;
 
     juce::AudioProcessorValueTreeState m_apvts;
 

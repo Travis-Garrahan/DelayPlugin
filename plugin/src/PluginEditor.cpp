@@ -72,10 +72,12 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     addAndMakeVisible(pingPongLabel);
 
 
-    addAndMakeVisible(effectToggleButton);
-    effectToggleButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts,
-        "IS_EFFECT_ENABLED", effectToggleButton);
-    addAndMakeVisible(effectLabel);
+    addAndMakeVisible(bypassToggleButton);
+    bypassToggleButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts,
+        "IS_BYPASS_ENABLED", bypassToggleButton);
+
+    bypassLabel.setText("Bypass", juce::dontSendNotification);
+    addAndMakeVisible(bypassLabel);
 
 }
 
@@ -120,7 +122,7 @@ void AudioPluginAudioProcessorEditor::resized()
     pingPongToggleButton.setBounds((int)(getWidth() * 0.15), (int)(0.9 * getHeight()), toggleWidth, toggleHeight);
     pingPongLabel.setBounds((int)(getWidth() * 0.15), (int)(0.9 * getHeight())- 20, labelWidth, labelHeight);
  
-    effectToggleButton.setBounds(static_cast<int>(getWidth() * 0.5 - toggleWidth), static_cast<int>(getHeight() * 0.9), 20, 20);
-    effectLabel.setBounds(static_cast<int>(getWidth() * 0.5 - toggleWidth), static_cast<int>(getHeight() * 0.9) - 20, 20, 20);
+    bypassToggleButton.setBounds((int)(getWidth() * 0.5 - toggleWidth), (int)(getHeight() * 0.9), toggleWidth, toggleHeight);
+    bypassLabel.setBounds((int)(getWidth() * 0.5 - toggleWidth), (int)(getHeight() * 0.9) - 20, labelWidth, labelHeight);
     
 }
