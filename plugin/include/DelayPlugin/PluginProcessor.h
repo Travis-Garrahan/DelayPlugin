@@ -1,7 +1,6 @@
 #pragma once
 
-#include "CircularBuffer.h"
-#include "LowPass1P.h"
+#include "DelayEffect.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 
 //==============================================================================
@@ -48,17 +47,7 @@ public:
 
 private:
 
-    double m_sampleRate {44100};
-
-    // One circular buffer per channel
-    std::vector<CircularBuffer<float>> m_delayBuffers;
-
-    // Lowpass filter for smoothing delay time input value
-    LowPass1P<float> m_lowPass;
-    
-    // For clearing delay buffers
-    bool m_lastIsPingPongEnabled;
-    bool m_lastIsBypassEnabled;
+    DelayEffect m_delayEffect;
 
     juce::AudioProcessorValueTreeState m_apvts;
 

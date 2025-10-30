@@ -65,7 +65,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     addAndMakeVisible(pingPongToggleButton);
     pingPongToggleButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts,
-        "IS_PING_PONG_ENABLED", pingPongToggleButton);
+        "IS_PING_PONG_ON", pingPongToggleButton);
 
     pingPongLabel.setText("Ping Pong", juce::dontSendNotification);
     //pingPongLabel.setJustificationType(juce::Justification::centred);
@@ -74,7 +74,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     addAndMakeVisible(bypassToggleButton);
     bypassToggleButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts,
-        "IS_BYPASS_ENABLED", bypassToggleButton);
+        "IS_BYPASS_ON", bypassToggleButton);
 
     bypassLabel.setText("Bypass", juce::dontSendNotification);
     addAndMakeVisible(bypassLabel);
