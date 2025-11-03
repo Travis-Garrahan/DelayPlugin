@@ -31,7 +31,7 @@ public:
         size(n), data(n, value), firstElement(0)
     {
         // ensure buffer size is power of 2:
-        assert(n == juce::nextPowerOfTwo(n));
+        assert(static_cast<int>(n) == juce::nextPowerOfTwo(static_cast<int>(n)));
     }
 
 

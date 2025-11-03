@@ -11,6 +11,8 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     setSize(400, 300);
 
+    juce::AudioProcessorValueTreeState& apvts = processorRef.getAPVTS();
+
     // Delay Time
     delayTimeSlider.setNumDecimalPlacesToDisplay(0);
     delayTimeSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -18,7 +20,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     addAndMakeVisible(delayTimeSlider);
 
     // Attach the delay Time slider to the AudioProcessorValueTreeState
-    delayTimeSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.apvts, 
+    delayTimeSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
         "DELAY_TIME", delayTimeSlider);
 
     delayTimeLabel.setText("Time", juce::dontSendNotification);
@@ -32,7 +34,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     feedbackSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
     addAndMakeVisible(feedbackSlider);
 
-    feedbackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.apvts, 
+    feedbackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
         "FEEDBACK", feedbackSlider);
 
     feedbackLabel.setText("Feedback", juce::dontSendNotification);
@@ -45,11 +47,30 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     mixSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     mixSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
     addAndMakeVisible(mixSlider);
-    mixSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processorRef.apvts, 
+
+    mixSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
         "MIX", mixSlider);
     mixLabel.setText("Mix", juce::dontSendNotification);
     mixLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(mixLabel);
+    //mixLabel.attachToComponent(&mixSlider, true);
+
+    addAndMakeVisible(pingPongToggleButton);
+    pingPongToggleButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts,
+        "IS_PING_PONG_ENABLED", pingPongToggleButton);
+
+    pingPongLabel.setText("Ping Pong", juce::dontSendNotification);
+    //pingPongLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(pingPongLabel);
+
+
+    addAndMakeVisible(bypassToggleButton);
+    bypassToggleButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts,
+        "IS_BYPASS_ENABLED", bypassToggleButton);
+
+    bypassLabel.setText("Bypass", juce::dontSendNotification);
+    addAndMakeVisible(bypassLabel);
+
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
@@ -85,4 +106,16 @@ void AudioPluginAudioProcessorEditor::resized()
 
     feedbackSlider.setBounds(getWidth() / 2 - sliderWidth / 2, getHeight() / 2, sliderWidth, sliderHeight);
     feedbackLabel.setBounds(getWidth() / 2 - sliderWidth / 2, getHeight() / 2 + sliderHeight, labelWidth, labelHeight);
+
+
+    int toggleWidth = 30;
+    int toggleHeight = 20;
+
+    //pingPongToggleButton.setBounds(0, (int)(0.9 * getHeight()), 20, 20);
+    pingPongToggleButton.setBounds((int)(getWidth() * 0.15), (int)(0.9 * getHeight()), toggleWidth, toggleHeight);
+    pingPongLabel.setBounds((int)(getWidth() * 0.15), (int)(0.9 * getHeight())- 20, labelWidth, labelHeight);
+
+    bypassToggleButton.setBounds((int)(getWidth() * 0.5 - toggleWidth), (int)(getHeight() * 0.9), toggleWidth, toggleHeight);
+    bypassLabel.setBounds((int)(getWidth() * 0.5 - toggleWidth), (int)(getHeight() * 0.9) - 20, labelWidth, labelHeight);
+
 }

@@ -43,23 +43,27 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-    
-    juce::AudioProcessorValueTreeState apvts;
+
+    juce::AudioProcessorValueTreeState& getAPVTS();
 
 private:
 
-    juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
-
-
-    double currentSampleRate {44100};
-    //int delayInSamples{};
+    double m_sampleRate {44100};
 
     // One circular buffer per channel
-    std::vector<CircularBuffer<float>> delayBuffers;
+    std::vector<CircularBuffer<float>> m_delayBuffers;
 
-    // One lowpass filter per channel
-    std::vector<LowPass1P<float>> lowPassFilters;
+    // Lowpass filter for smoothing delay time input value
+    LowPass1P<float> m_lowPass;
+    
+    // For clearing delay buffers
+    bool m_lastIsPingPongEnabled;
+    bool m_lastIsBypassEnabled;
 
+    juce::AudioProcessorValueTreeState m_apvts;
+
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
+    
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
 };
