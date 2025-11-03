@@ -3,6 +3,7 @@
 //
 //   References:  https://ccrma.stanford.edu/~jos/fp/One_Pole.html
 //                https://dspguide.com/ch19/2.htm 
+//                https://msp.ucsd.edu/techniques/latest/book-html/node140.html
 //
 
 #ifndef LOW_PASS_1P_H
@@ -23,6 +24,7 @@ public:
     void clear();
     void setCutoff(FloatType cutoffFreq);
     void setSampleRate(unsigned int sampleRate);
+    void useApproxCutoff(bool useApprox);
 
 private:
     FloatType m_b0;
@@ -30,6 +32,7 @@ private:
     FloatType m_y1;
     unsigned int m_sampleRate;
     FloatType m_cutoffFreq;
+    bool m_useApprox;
     void setCoefs();
 };
 
@@ -126,11 +129,30 @@ void LowPass1P<FloatType>::setCoefs()
     // Convert cutoff in Hz to angular frequency (radians per second)
     const FloatType TWO_PI = FloatType(6.28318530718);
     FloatType omega = TWO_PI * m_cutoffFreq;
+    
+    if (m_useApprox)
+    {
+        // Fast approximation that avoids using std::exp. Innacurate for very high frequencies. 
+        m_a1 = omega / m_sampleRate - FloatType(1);
 
-    m_a1 = -std::exp(-omega / m_sampleRate);
+        // Need to do an additional check to keep a1 < 1
+        if (m_a1 >= FloatType(1))
+            m_a1 = FloatType(0.99999);
+    }
+    else
+    {
+        m_a1 = -std::exp(-omega / m_sampleRate);
+    }
 
     // Normalize
     m_b0 = FloatType(1) - std::abs(m_a1);
+}
+
+
+template<std::floating_point FloatType>
+void LowPass1P<FloatType>::useApproxCutoff(bool useApprox)
+{
+    m_useApprox = useApprox;    
 }
 
 #endif // LOW_PASS_1P_H
