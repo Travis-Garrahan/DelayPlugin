@@ -79,6 +79,15 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     bypassLabel.setText("Bypass", juce::dontSendNotification);
     addAndMakeVisible(bypassLabel);
 
+
+    // Cutoff
+    loopFilterCutoffSlider.setNumDecimalPlacesToDisplay(0);
+    loopFilterCutoffSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    loopFilterCutoffSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+    addAndMakeVisible(loopFilterCutoffSlider);
+    loopFilterCutoffSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, 
+        "LOOP_FILTER_CUTOFF", loopFilterCutoffSlider);
+
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
@@ -125,4 +134,6 @@ void AudioPluginAudioProcessorEditor::resized()
     bypassToggleButton.setBounds((int)(getWidth() * 0.5 - toggleWidth), (int)(getHeight() * 0.9), toggleWidth, toggleHeight);
     bypassLabel.setBounds((int)(getWidth() * 0.5 - toggleWidth), (int)(getHeight() * 0.9) - 20, labelWidth, labelHeight);
     
+    // test
+    loopFilterCutoffSlider.setBounds((int)(getWidth() * 0.75), (int)(getHeight() * 0.9) - 20, sliderWidth, sliderHeight);
 }

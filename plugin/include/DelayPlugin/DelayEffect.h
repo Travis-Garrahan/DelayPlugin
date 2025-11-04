@@ -20,9 +20,14 @@ private:
     bool m_isBypassOn;
     bool m_lastIsBypassOn;
 
+    float m_loopFilterCutoff;
+
     std::vector<CircularBuffer<float>> m_delayBuffers;
     LowPass1P<float> m_delayTimeLowPass; 
 
+    LowPass1P<float> m_lowPassLeft;
+    LowPass1P<float> m_lowPassRight;
+    
     void initDelayBuffers();
     void clearDelayBuffers();
 

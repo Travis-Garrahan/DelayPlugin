@@ -181,6 +181,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     params.push_back(std::make_unique<juce::AudioParameterFloat>("MIX", "Mix", 0.f, 1.f, 0.5f));
     params.push_back(std::make_unique<juce::AudioParameterBool>("IS_PING_PONG_ON", "Ping Pong", false));
     params.push_back(std::make_unique<juce::AudioParameterBool>("IS_BYPASS_ON", "Bypass", false));
+    
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("LOOP_FILTER_CUTOFF", "Cutoff", 0.f, 20000.f, 1000.f));
 
     return { params.begin(), params.end() };
 }
