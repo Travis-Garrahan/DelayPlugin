@@ -1,5 +1,5 @@
 //
-//   Created by Russell Brown. Last edited on 10/15/25.
+//   Created by Russell Brown. Last edited on 11/4/25.
 //
 //   References:  https://ccrma.stanford.edu/~jos/fp/One_Pole.html
 //                https://dspguide.com/ch19/2.htm 
@@ -132,12 +132,16 @@ void LowPass1P<FloatType>::setCoefs()
     
     if (m_useApprox)
     {
-        // Fast approximation that avoids using std::exp. Innacurate for very high frequencies. 
+        // Taylor approximation that avoids using std::exp. Innacurate for very high 
+        // frequencies, but good enough for most audio purposes. 
         m_a1 = omega / m_sampleRate - FloatType(1);
 
-        // Need to do an additional check to keep a1 < 1
-        if (m_a1 >= FloatType(1))
-            m_a1 = FloatType(0.99999);
+        // Need to do an additional check to keep a1 between 0 and -1
+        if (m_a1 < FloatType(-1))
+            m_a1 = FloatType(-1)
+
+        else if (m_a1 > FloatType(0))
+            m_a1 = FloatType(0);
     }
     else
     {
