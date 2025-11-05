@@ -138,7 +138,7 @@ void LowPass1P<FloatType>::setCoefs()
 
         // Need to do an additional check to keep a1 between 0 and -1
         if (m_a1 < FloatType(-1))
-            m_a1 = FloatType(-1)
+            m_a1 = FloatType(-1);
 
         else if (m_a1 > FloatType(0))
             m_a1 = FloatType(0);
