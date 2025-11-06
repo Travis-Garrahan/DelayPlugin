@@ -20,9 +20,16 @@ juce_add_plugin(${PROJECT_NAME}
 )
 
 # set source files of plugin project
-set(SOURCE_FILES src/PluginEditor.cpp src/PluginProcessor.cpp src/DelayEffect.cpp)
+set(SOURCE_FILES src/PluginEditor.cpp src/PluginProcessor.cpp src/DelayEffect.cpp src/LoopFilter.cpp)
 # optional; includes header files in project files tree in Visual studio
-set(HEADER_FILES ${INCLUDE_DIR}/PluginEditor.h ${INCLUDE_DIR}/PluginProcessor.h ${INCLUDE_DIR}/DelayEffect.h ${INCLUDE_DIR}/CircularBuffer.h ${INCLUDE_DIR}/LowPass1P.h)
+set(HEADER_FILES 
+        ${INCLUDE_DIR}/PluginEditor.h 
+        ${INCLUDE_DIR}/PluginProcessor.h 
+        ${INCLUDE_DIR}/DelayEffect.h 
+        ${INCLUDE_DIR}/CircularBuffer.h 
+        ${INCLUDE_DIR}/LowPass1P.h
+        ${INCLUDE_DIR}/LoopFilter.h
+    )
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCE_FILES} ${HEADER_FILES})
 
 # set include directory

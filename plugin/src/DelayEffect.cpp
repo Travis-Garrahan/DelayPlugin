@@ -1,15 +1,17 @@
 #include "DelayPlugin/DelayEffect.h"
 
 DelayEffect::DelayEffect() : m_sampleRate{}, m_delayTime{}, m_feedback{}, 
-    m_mix{}, m_isPingPongOn{}, m_lastIsPingPongOn{}, m_isBypassOn{}, m_lastIsBypassOn{}
+    m_mix{}, m_isPingPongOn{}, m_lastIsPingPongOn{}, m_isBypassOn{}, m_lastIsBypassOn{}, 
+    m_loopFilterType{}, m_loopFilterCutoff{}
 {
     // Delay time smoothing filter will have a fixed cutoff frequency of 1 Hz.
     m_delayTimeLowPass.setCutoff(1.0f); 
 
-    m_lowPassLeft.useApproxCutoff(true);
-    m_lowPassRight.useApproxCutoff(true);
-    m_lowPassLeft.setCutoff(900);
-    m_lowPassRight.setCutoff(900);
+    m_loopFilterLeft.setCutoff(900);
+    m_loopFilterRight.setCutoff(900);
+    
+    m_loopFilterLeft.setFilterType(FilterType::highPass);
+    m_loopFilterRight.setFilterType(FilterType::highPass);
 }
 
 
@@ -39,8 +41,8 @@ void DelayEffect::prepareToPlay(double sampleRate)
     m_sampleRate = sampleRate;
     m_delayTimeLowPass.setSampleRate(static_cast<unsigned int>(sampleRate));
     
-    m_lowPassLeft.setSampleRate(static_cast<unsigned int>(sampleRate));
-    m_lowPassRight.setSampleRate(static_cast<unsigned int>(sampleRate));
+    m_loopFilterLeft.setSampleRate(static_cast<float>(sampleRate));
+    m_loopFilterRight.setSampleRate(static_cast<float>(sampleRate));
 
     initDelayBuffers();
 }
@@ -60,8 +62,10 @@ void DelayEffect::setParametersFromAPVTS(juce::AudioProcessorValueTreeState& apv
     m_delayTime = *apvts.getRawParameterValue("DELAY_TIME");    
     m_isPingPongOn = *apvts.getRawParameterValue("IS_PING_PONG_ON");
     m_isBypassOn = *apvts.getRawParameterValue("IS_BYPASS_ON");
-
     m_loopFilterCutoff = *apvts.getRawParameterValue("LOOP_FILTER_CUTOFF");
+
+    auto* loopFilterTypePtr = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter("LOOP_FILTER_TYPE"));
+    m_loopFilterType = loopFilterTypePtr->getIndex();
 }
 
 
@@ -80,9 +84,11 @@ void DelayEffect::update()
         m_lastIsPingPongOn = m_isPingPongOn;
     }
 
-    m_lowPassLeft.setCutoff(m_loopFilterCutoff);
-    m_lowPassRight.setCutoff(m_loopFilterCutoff);
+    m_loopFilterLeft.setFilterType(static_cast<FilterType>(m_loopFilterType));
+    m_loopFilterRight.setFilterType(static_cast<FilterType>(m_loopFilterType));
 
+    m_loopFilterLeft.setCutoff(m_loopFilterCutoff);
+    m_loopFilterRight.setCutoff(m_loopFilterCutoff);
 }
 
 
@@ -117,8 +123,8 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
         float delayedRight = m_feedback * delayBufferRight[readIndex];
 
         // Apply filter to delay output
-        delayedLeft = m_lowPassLeft.getNextSample(delayedLeft);
-        delayedRight = m_lowPassRight.getNextSample(delayedRight);
+        delayedLeft = m_loopFilterLeft.getNextSample(delayedLeft);
+        delayedRight = m_loopFilterRight.getNextSample(delayedRight);
 
         // Determine feedback configuration 
         if (m_isPingPongOn == true)

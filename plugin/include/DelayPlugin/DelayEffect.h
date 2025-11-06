@@ -3,8 +3,8 @@
 
 #include "CircularBuffer.h"
 #include "LowPass1P.h"
+#include "LoopFilter.h"
 #include <juce_audio_processors/juce_audio_processors.h>
-#include <memory>
 
 class DelayEffect
 {
@@ -20,13 +20,14 @@ private:
     bool m_isBypassOn;
     bool m_lastIsBypassOn;
 
+    int m_loopFilterType;
     float m_loopFilterCutoff;
 
     std::vector<CircularBuffer<float>> m_delayBuffers;
     LowPass1P<float> m_delayTimeLowPass; 
 
-    LowPass1P<float> m_lowPassLeft;
-    LowPass1P<float> m_lowPassRight;
+    LoopFilter m_loopFilterLeft;
+    LoopFilter m_loopFilterRight;
     
     void initDelayBuffers();
     void clearDelayBuffers();
