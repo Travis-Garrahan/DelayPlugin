@@ -1,17 +1,12 @@
 #include "DelayPlugin/DelayEffect.h"
+#include <algorithm>
 
 DelayEffect::DelayEffect() : m_sampleRate{}, m_delayTime{}, m_feedback{}, 
     m_mix{}, m_isPingPongOn{}, m_lastIsPingPongOn{}, m_isBypassOn{}, m_lastIsBypassOn{}, 
-    m_loopFilterType{}, m_loopFilterCutoff{}
+    m_loopFilterType{}, m_lastLoopFilterType{}, m_loopFilterCutoff{}
 {
     // Delay time smoothing filter will have a fixed cutoff frequency of 1 Hz.
     m_delayTimeLowPass.setCutoff(1.0f); 
-
-    m_loopFilterLeft.setCutoff(900);
-    m_loopFilterRight.setCutoff(900);
-    
-    m_loopFilterLeft.setFilterType(FilterType::highPass);
-    m_loopFilterRight.setFilterType(FilterType::highPass);
 }
 
 
@@ -39,7 +34,7 @@ void DelayEffect::initDelayBuffers()
 void DelayEffect::prepareToPlay(double sampleRate)
 {
     m_sampleRate = sampleRate;
-    m_delayTimeLowPass.setSampleRate(static_cast<unsigned int>(sampleRate));
+    m_delayTimeLowPass.setSampleRate(static_cast<float>(sampleRate));
     
     m_loopFilterLeft.setSampleRate(static_cast<float>(sampleRate));
     m_loopFilterRight.setSampleRate(static_cast<float>(sampleRate));
@@ -52,6 +47,8 @@ void DelayEffect::releaseResources()
 {
     clearDelayBuffers();
     m_delayTimeLowPass.clear();
+    m_loopFilterLeft.clear();
+    m_loopFilterRight.clear();
 }
 
 void DelayEffect::setParametersFromAPVTS(juce::AudioProcessorValueTreeState& apvts)
@@ -84,8 +81,26 @@ void DelayEffect::update()
         m_lastIsPingPongOn = m_isPingPongOn;
     }
 
-    m_loopFilterLeft.setFilterType(static_cast<FilterType>(m_loopFilterType));
-    m_loopFilterRight.setFilterType(static_cast<FilterType>(m_loopFilterType));
+    // Check if filter type changed. The filter state will also be cleared
+    if (m_loopFilterType != m_lastLoopFilterType)
+    {
+        switch (m_loopFilterType)
+        {
+            case 0:
+                m_loopFilterLeft.setFilterType(FilterType::lowPass);
+                m_loopFilterRight.setFilterType(FilterType::lowPass);
+                break;
+            case 1:
+                m_loopFilterLeft.setFilterType(FilterType::highPass);
+                m_loopFilterRight.setFilterType(FilterType::highPass);
+                break;
+            default:
+                // Do nothing
+                break;
+        }
+
+        m_lastLoopFilterType = m_loopFilterType;
+    }
 
     m_loopFilterLeft.setCutoff(m_loopFilterCutoff);
     m_loopFilterRight.setCutoff(m_loopFilterCutoff);
@@ -96,7 +111,7 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
 {
     if (m_isBypassOn == true)
         return;
-
+    
     auto& delayBufferLeft = m_delayBuffers[0]; 
     auto& delayBufferRight = m_delayBuffers[1]; 
 
@@ -110,26 +125,32 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
         // Get the current input sample for each channel
         float inputLeft = channelDataLeft[i];
         float inputRight = channelDataRight[i];
-        
+
         // Apply smoothing to delay time slider value.
         float currentDelayTimeSeconds = m_delayTimeLowPass.getNextSample(m_delayTime) / 1000.0f;
-        
+
         // Get read index from current delay time.
         int delayInSamples = static_cast<int>(currentDelayTimeSeconds * m_sampleRate);
         int readIndex = static_cast<int>(delayBufferLeft.size) - delayInSamples;
+
+        // Clamp readIndex to ensure it stays within bounds. 
+        readIndex = std::clamp(readIndex, 0, static_cast<int>(delayBufferLeft.size - 1));
 
         // Get delayed outputs and apply feedback gain.
         float delayedLeft = m_feedback * delayBufferLeft[readIndex];
         float delayedRight = m_feedback * delayBufferRight[readIndex];
 
         // Apply filter to delay output
-        delayedLeft = m_loopFilterLeft.getNextSample(delayedLeft);
-        delayedRight = m_loopFilterRight.getNextSample(delayedRight);
+        if (m_loopFilterType != 2)
+        {
+            delayedLeft = m_loopFilterLeft.getNextSample(delayedLeft);
+            delayedRight = m_loopFilterRight.getNextSample(delayedRight);
+        }
 
         // Determine feedback configuration 
         if (m_isPingPongOn == true)
         {
-            // Mix left and right channels down to mono.
+            // Mix left and right channels to mono.
             float inputMono = (inputLeft + inputRight) / 2.0f;
 
             // Feed left and right delay buffers into eachother. Incomming audio will be fed into the left delay.
