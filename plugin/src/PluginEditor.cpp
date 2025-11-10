@@ -8,8 +8,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     juce::ignoreUnused (processorRef);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    
-    //int textBoxWidth = 50;
 
     setSize(400, 300);
 
@@ -17,13 +15,12 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     // Delay Time
     delayTimeSlider.setNumDecimalPlacesToDisplay(0);
-    //delayTimeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, textBoxWidth, delayTimeSlider.getTextBoxHeight());
     delayTimeSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     delayTimeSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
     addAndMakeVisible(delayTimeSlider);
 
     // Attach the delay Time slider to the AudioProcessorValueTreeState
-    delayTimeSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, 
+    delayTimeSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
         "DELAY_TIME", delayTimeSlider);
 
     delayTimeLabel.setText("Time", juce::dontSendNotification);
@@ -33,31 +30,26 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     // Feedback
     feedbackSlider.setNumDecimalPlacesToDisplay(3);
-    //feedbackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, textBoxWidth, feedbackSlider.getTextBoxHeight());
     feedbackSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     feedbackSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
     addAndMakeVisible(feedbackSlider);
 
-    feedbackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, 
+    feedbackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
         "FEEDBACK", feedbackSlider);
 
     feedbackLabel.setText("Feedback", juce::dontSendNotification);
     feedbackLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(feedbackLabel);
-    //feedbackLabel.attachToComponent(&feedbackSlider, true);
 
     // Mix
-    // mixSlider.setRange(0.0, 1.0);
-    // mixSlider.setValue(0.5);
+
     mixSlider.setNumDecimalPlacesToDisplay(3);
-    //mixSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, textBoxWidth, mixSlider.getTextBoxHeight());
     mixSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     mixSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
     addAndMakeVisible(mixSlider);
 
-    mixSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, 
+    mixSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
         "MIX", mixSlider);
-
     mixLabel.setText("Mix", juce::dontSendNotification);
     mixLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(mixLabel);
@@ -89,11 +81,12 @@ AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
 void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+    // Background image
+    const int backgroundImageDataSize = BinaryData::background_jpgSize;
+    backgroundImage = juce::ImageCache::getFromMemory(BinaryData::background_jpg, backgroundImageDataSize);
+    g.drawImageAt(backgroundImage, 0, 0);
 
-    // g.setColour (juce::Colours::white);
-    // g.setFont (15.0f);
-    // g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
+
 }
 
 void AudioPluginAudioProcessorEditor::resized()
@@ -117,12 +110,12 @@ void AudioPluginAudioProcessorEditor::resized()
 
     int toggleWidth = 30;
     int toggleHeight = 20;
-   
+
     //pingPongToggleButton.setBounds(0, (int)(0.9 * getHeight()), 20, 20);
     pingPongToggleButton.setBounds((int)(getWidth() * 0.15), (int)(0.9 * getHeight()), toggleWidth, toggleHeight);
     pingPongLabel.setBounds((int)(getWidth() * 0.15), (int)(0.9 * getHeight())- 20, labelWidth, labelHeight);
- 
+
     bypassToggleButton.setBounds((int)(getWidth() * 0.5 - toggleWidth), (int)(getHeight() * 0.9), toggleWidth, toggleHeight);
     bypassLabel.setBounds((int)(getWidth() * 0.5 - toggleWidth), (int)(getHeight() * 0.9) - 20, labelWidth, labelHeight);
-    
+
 }
