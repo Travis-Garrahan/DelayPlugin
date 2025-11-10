@@ -181,6 +181,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     params.push_back(std::make_unique<juce::AudioParameterFloat>("MIX", "Mix", 0.f, 1.f, 0.5f));
     params.push_back(std::make_unique<juce::AudioParameterBool>("IS_PING_PONG_ON", "Ping Pong", false));
     params.push_back(std::make_unique<juce::AudioParameterBool>("IS_BYPASS_ON", "Bypass", false));
+    
+    // For logarithmic slider that works with APVTS, need to use a NormalisableRange
+    juce::NormalisableRange<float> loopFilterCutoffRange(0.0f, 20000.0f);
+    loopFilterCutoffRange.setSkewForCentre(500.0f); // 1000
+    
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("LOOP_FILTER_CUTOFF", "Cutoff", loopFilterCutoffRange, 1000.f)); 
+    params.push_back(std::make_unique<juce::AudioParameterChoice>("LOOP_FILTER_TYPE", "Filter Type", juce::StringArray{"Low Pass", "High Pass", "None"}, 2));
 
     return { params.begin(), params.end() };
 }

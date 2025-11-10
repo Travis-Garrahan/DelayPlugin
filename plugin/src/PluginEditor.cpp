@@ -71,6 +71,24 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     bypassLabel.setText("Bypass", juce::dontSendNotification);
     addAndMakeVisible(bypassLabel);
 
+
+    // Cutoff
+    loopFilterCutoffSlider.setNumDecimalPlacesToDisplay(0);
+    loopFilterCutoffSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    loopFilterCutoffSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+    //loopFilterCutoffSlider.setSkewFactorFromMidPoint(500);
+    addAndMakeVisible(loopFilterCutoffSlider);
+    loopFilterCutoffSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, 
+        "LOOP_FILTER_CUTOFF", loopFilterCutoffSlider);
+
+    // Filter type
+    auto* parameter = apvts.getParameter("LOOP_FILTER_TYPE");
+    loopFilterTypeComboBox.addItemList(parameter->getAllValueStrings(), 1);
+
+    addAndMakeVisible(loopFilterTypeComboBox);
+    loopFilterTypeComboBoxAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts, 
+        "LOOP_FILTER_TYPE", loopFilterTypeComboBox);
+
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
@@ -118,4 +136,8 @@ void AudioPluginAudioProcessorEditor::resized()
     bypassToggleButton.setBounds((int)(getWidth() * 0.5 - toggleWidth), (int)(getHeight() * 0.9), toggleWidth, toggleHeight);
     bypassLabel.setBounds((int)(getWidth() * 0.5 - toggleWidth), (int)(getHeight() * 0.9) - 20, labelWidth, labelHeight);
 
+    loopFilterCutoffSlider.setBounds((int)(getWidth() * 0.75), (int)(getHeight() * 0.9) - sliderHeight, sliderWidth, sliderHeight);
+
+    loopFilterTypeComboBox.setBounds((int)(getWidth() * 0.75), (int)(getHeight() * 0.9), 30, 20);
 }
+
