@@ -2,6 +2,7 @@
 
 #include "PluginProcessor.h"
 #include "BinaryData.h"
+#include "CustomLookAndFeel.h"
 
 //==============================================================================
 class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor
@@ -17,7 +18,10 @@ public:
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
+    CustomLookAndFeel customLookAndFeel;
+
     juce::Image backgroundImage;
+
 
     AudioPluginAudioProcessor& processorRef;
     
@@ -33,6 +37,7 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mixSliderAttachment;
     juce::Label mixLabel;
 
+
     juce::ToggleButton pingPongToggleButton;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> pingPongToggleButtonAttachment;
     juce::Label pingPongLabel;
@@ -40,6 +45,7 @@ private:
     juce::ToggleButton bypassToggleButton;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> bypassToggleButtonAttachment;
     juce::Label bypassLabel;
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };

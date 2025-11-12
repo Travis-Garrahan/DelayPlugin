@@ -2,7 +2,18 @@
 // Created by Travis Garrahan on 11/10/25.
 //
 
-#ifndef SIMPLE_DELAY_CUSTOMLOOKANDFEEL_H
-#define SIMPLE_DELAY_CUSTOMLOOKANDFEEL_H
+#pragma once
+#include <juce_gui_basics/juce_gui_basics.h>
+#include "BinaryData.h"
 
-#endif //SIMPLE_DELAY_CUSTOMLOOKANDFEEL_H
+
+class CustomLookAndFeel : public juce::LookAndFeel_V4
+{
+public:
+    CustomLookAndFeel();
+    void drawRotarySlider(juce::Graphics &g, int x, int y, int width, int height,
+                                                float sliderPosProportional, float rotaryStartAngle,
+                                                float rotaryEndAngle, juce::Slider &slider) override;
+private:
+    std::unique_ptr<juce::Drawable> knobDrawable;
+};

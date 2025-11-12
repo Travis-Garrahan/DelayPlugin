@@ -14,6 +14,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     juce::AudioProcessorValueTreeState& apvts = processorRef.getAPVTS();
 
     // Delay Time
+    delayTimeSlider.setLookAndFeel(&customLookAndFeel);
     delayTimeSlider.setNumDecimalPlacesToDisplay(0);
     delayTimeSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     delayTimeSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
@@ -29,6 +30,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     //delayTimeLabel.attachToComponent(&delayTimeSlider, true);
 
     // Feedback
+    feedbackSlider.setLookAndFeel(&customLookAndFeel);
     feedbackSlider.setNumDecimalPlacesToDisplay(3);
     feedbackSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     feedbackSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
@@ -42,7 +44,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     addAndMakeVisible(feedbackLabel);
 
     // Mix
-
+    mixSlider.setLookAndFeel(&customLookAndFeel);
     mixSlider.setNumDecimalPlacesToDisplay(3);
     mixSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     mixSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
@@ -53,14 +55,12 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     mixLabel.setText("Mix", juce::dontSendNotification);
     mixLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(mixLabel);
-    //mixLabel.attachToComponent(&mixSlider, true);
 
     addAndMakeVisible(pingPongToggleButton);
     pingPongToggleButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts,
         "IS_PING_PONG_ENABLED", pingPongToggleButton);
 
     pingPongLabel.setText("Ping Pong", juce::dontSendNotification);
-    //pingPongLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(pingPongLabel);
 
 
@@ -97,7 +97,6 @@ void AudioPluginAudioProcessorEditor::resized()
     int labelWidth = 80;
     int labelHeight = 15;
 
-    // setBound(int x, int y, int width, int height)
     mixSlider.setBounds( (int)(getWidth() * 0.15), getHeight() / 2 - sliderHeight, sliderWidth, sliderHeight);
     mixLabel.setBounds( (int)(getWidth() * 0.15), getHeight() / 2, labelWidth, labelHeight);
     
@@ -111,7 +110,6 @@ void AudioPluginAudioProcessorEditor::resized()
     int toggleWidth = 30;
     int toggleHeight = 20;
 
-    //pingPongToggleButton.setBounds(0, (int)(0.9 * getHeight()), 20, 20);
     pingPongToggleButton.setBounds((int)(getWidth() * 0.15), (int)(0.9 * getHeight()), toggleWidth, toggleHeight);
     pingPongLabel.setBounds((int)(getWidth() * 0.15), (int)(0.9 * getHeight())- 20, labelWidth, labelHeight);
 
