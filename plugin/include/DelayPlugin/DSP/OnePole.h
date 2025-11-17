@@ -1,14 +1,20 @@
-//
-//   Created by Russell Brown. Last edited on 11/9/25.
-//
-//   References:  https://ccrma.stanford.edu/~jos/fp/One_Pole.html
-//                https://dspguide.com/ch19/2.htm 
-//                https://msp.ucsd.edu/techniques/latest/book-html/node140.html
-//
+///
+///     @file OnePole.h
+///     @brief Single-pole low-pass/high-pass filter.
+///     @author Russell Brown
+///     @date November 15, 2025
+///
+///     References:  
+///         
+///         https://ccrma.stanford.edu/~jos/fp/One_Pole.html
+///         https://dspguide.com/ch19/2.htm 
+///         https://msp.ucsd.edu/techniques/latest/book-html/node140.html
+///
 
 #ifndef ONE_POLE_H
 #define ONE_POLE_H
 
+#include "IAudioFilter.h"
 #include <cmath>
 #include <concepts>
 #include <algorithm>
@@ -19,13 +25,14 @@ enum class FilterType { lowPass, highPass };
 
 /* Single-pole low-pass/high-pass filter */
 template<std::floating_point FloatType>
-class OnePole
+class OnePole : public IAudioFilter<FloatType>
 {
 public:
-    OnePole(FilterType filterType = FilterType::lowPass, FloatType sampleRate = FloatType(44100), 
+    OnePole(FilterType filterType = FilterType::lowPass, 
+                FloatType sampleRate = FloatType(44100), 
                     FloatType cutoffFreq = FloatType(1000));
     ~OnePole();
-    FloatType getNextSample(FloatType x);
+    FloatType getNextSample(FloatType x) override;
     void clear();
     void setCutoff(FloatType cutoffFreq);
     void setSampleRate(FloatType sampleRate);
@@ -47,9 +54,10 @@ private:
 
 
 template<std::floating_point FloatType>
-OnePole<FloatType>::OnePole(FilterType filterType, FloatType sampleRate, FloatType cutoffFreq) 
-    : m_filterType{filterType}, m_sampleRate{sampleRate}, m_b0{}, m_b1{}, m_a1{}, 
-      m_x1{}, m_y1{}, m_useApprox{true}
+OnePole<FloatType>::OnePole(FilterType filterType, FloatType sampleRate, 
+                                FloatType cutoffFreq) 
+    : m_filterType{filterType}, m_sampleRate{sampleRate}, m_b0{}, m_b1{}, 
+        m_a1{}, m_x1{}, m_y1{}, m_useApprox{true}
 {
     setCutoff(cutoffFreq);
 }

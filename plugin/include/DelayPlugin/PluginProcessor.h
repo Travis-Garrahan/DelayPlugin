@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DelayEffect.h"
+#include "DSP/DelayEffect.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 
 //==============================================================================

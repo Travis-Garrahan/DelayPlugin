@@ -1,9 +1,15 @@
-#include "DelayPlugin/DelayEffect.h"
+#include "DelayPlugin/DSP/DelayEffect.h"
 #include <algorithm>
 
 DelayEffect::DelayEffect() : m_sampleRate{}, m_delayTime{}, m_feedback{}, 
-    m_mix{}, m_isPingPongOn{}, m_lastIsPingPongOn{}, m_isBypassOn{}, m_lastIsBypassOn{}, 
-    m_loopFilterType{}, m_lastLoopFilterType{}, m_loopFilterCutoff{}
+    m_mix{}, m_isPingPongOn{}, m_lastIsPingPongOn{}, m_isBypassOn{}, 
+    m_lastIsBypassOn{}, m_loopFilterType{}, m_lastLoopFilterType{}, 
+    m_loopFilterCutoff{}, m_diffusion{},
+
+    // Diffuser delay lengths based on Freeverb 
+    // ccrma.stanford.edu/~jos/pasp/Freeverb.html
+    m_diffuserLeft(4, {225, 556, 441, 341}, {0.7f, 0.7f, 0.7f, 0.7f}), 
+    m_diffuserRight(4, {225, 556, 441, 341}, {0.7f, 0.7f, 0.7f, 0.7f})
 {
     // Delay time smoothing filter will have a fixed cutoff frequency of 1 Hz.
     m_delayTimeLowPass.setCutoff(1.0f); 
@@ -60,8 +66,11 @@ void DelayEffect::setParametersFromAPVTS(juce::AudioProcessorValueTreeState& apv
     m_isPingPongOn = *apvts.getRawParameterValue("IS_PING_PONG_ON");
     m_isBypassOn = *apvts.getRawParameterValue("IS_BYPASS_ON");
     m_loopFilterCutoff = *apvts.getRawParameterValue("LOOP_FILTER_CUTOFF");
+    m_diffusion = *apvts.getRawParameterValue("DIFFUSION");
 
-    auto* loopFilterTypePtr = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter("LOOP_FILTER_TYPE"));
+    auto* loopFilterTypePtr = dynamic_cast<juce::AudioParameterChoice*>(
+                                    apvts.getParameter("LOOP_FILTER_TYPE"));
+    
     m_loopFilterType = loopFilterTypePtr->getIndex();
 }
 
@@ -115,7 +124,8 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
     auto& delayBufferLeft = m_delayBuffers[0]; 
     auto& delayBufferRight = m_delayBuffers[1]; 
 
-    // Get left and right audio buffers. Each contains the input data, which is processed by overwriting it
+    // Get left and right audio buffers. Each contains the input data, which 
+    // is processed by overwriting it
     auto* channelDataLeft = buffer.getWritePointer(0);
     auto* channelDataRight = buffer.getWritePointer(1);
 
@@ -127,14 +137,16 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
         float inputRight = channelDataRight[i];
 
         // Apply smoothing to delay time slider value.
-        float currentDelayTimeSeconds = m_delayTimeLowPass.getNextSample(m_delayTime) / 1000.0f;
+        float currentDelayTimeSeconds = m_delayTimeLowPass.getNextSample(
+                                            m_delayTime) / 1000.0f;
 
         // Get read index from current delay time.
         int delayInSamples = static_cast<int>(currentDelayTimeSeconds * m_sampleRate);
         int readIndex = static_cast<int>(delayBufferLeft.size) - delayInSamples;
 
         // Clamp readIndex to ensure it stays within bounds. 
-        readIndex = std::clamp(readIndex, 0, static_cast<int>(delayBufferLeft.size - 1));
+        readIndex = std::clamp(readIndex, 0, static_cast<int>(
+                                                delayBufferLeft.size - 1));
 
         // Get delayed outputs and apply feedback gain.
         float delayedLeft = m_feedback * delayBufferLeft[readIndex];
@@ -147,13 +159,22 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
             delayedRight = m_loopFilterRight.getNextSample(delayedRight);
         }
 
+        // Apply diffusion. The diffusion amount is controlled by cross-fading 
+        // between the diffuser input and output
+        delayedLeft = (1.0f - m_diffusion) * delayedLeft 
+            + m_diffusion * m_diffuserLeft.getNextSample(delayedLeft);
+        
+        delayedRight = (1.0f - m_diffusion) * delayedRight 
+            + m_diffusion * m_diffuserRight.getNextSample(delayedRight);
+
         // Determine feedback configuration 
         if (m_isPingPongOn == true)
         {
             // Mix left and right channels to mono.
             float inputMono = (inputLeft + inputRight) / 2.0f;
 
-            // Feed left and right delay buffers into eachother. Incomming audio will be fed into the left delay.
+            // Feed left and right delay buffers into eachother. 
+            // Incomming audio will be fed into the left delay.
             delayBufferLeft.push(inputMono + delayedRight);
             delayBufferRight.push(delayedLeft);
         }

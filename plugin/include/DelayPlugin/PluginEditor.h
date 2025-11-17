@@ -48,7 +48,10 @@ private:
     // Loop filter type
     juce::ComboBox loopFilterTypeComboBox;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> loopFilterTypeComboBoxAttachment;
-    
 
+    // Diffusion slider
+    juce::Slider diffusionSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> diffusionSliderAttachment;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };

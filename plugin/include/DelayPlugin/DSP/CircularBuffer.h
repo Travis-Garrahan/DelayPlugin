@@ -10,8 +10,6 @@
 #include <juce_core/juce_core.h>
 
 
-#endif //SIMPLE_DELAY_CIRCULARBUFFER_H
-
 template<typename FloatType>
 class CircularBuffer
 {
@@ -118,3 +116,4 @@ private:
         return val & (size - 1);
     }
 };
+#endif //SIMPLE_DELAY_CIRCULARBUFFER_H

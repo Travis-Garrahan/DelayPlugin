@@ -10,6 +10,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     // editor's size to whatever you need it to be.
 
     setSize(400, 300);
+    //setSize(400, 500);
 
     juce::AudioProcessorValueTreeState& apvts = processorRef.getAPVTS();
 
@@ -89,6 +90,14 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     loopFilterTypeComboBoxAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts, 
         "LOOP_FILTER_TYPE", loopFilterTypeComboBox);
 
+    // Diffusion slider
+    diffusionSlider.setNumDecimalPlacesToDisplay(0);
+    diffusionSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    diffusionSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+    addAndMakeVisible(diffusionSlider);
+    diffusionSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
+        "DIFFUSION", diffusionSlider);
+
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
@@ -103,8 +112,6 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
     const int backgroundImageDataSize = BinaryData::background_jpgSize;
     backgroundImage = juce::ImageCache::getFromMemory(BinaryData::background_jpg, backgroundImageDataSize);
     g.drawImageAt(backgroundImage, 0, 0);
-
-
 }
 
 void AudioPluginAudioProcessorEditor::resized()
@@ -139,5 +146,7 @@ void AudioPluginAudioProcessorEditor::resized()
     loopFilterCutoffSlider.setBounds((int)(getWidth() * 0.75), (int)(getHeight() * 0.9) - sliderHeight, sliderWidth, sliderHeight);
 
     loopFilterTypeComboBox.setBounds((int)(getWidth() * 0.75), (int)(getHeight() * 0.9), 30, 20);
+
+    diffusionSlider.setBounds(static_cast<int>(getWidth() / 2 - sliderWidth / 2), static_cast<int>(getHeight() / 2 - sliderHeight), sliderWidth, sliderHeight);
 }
 

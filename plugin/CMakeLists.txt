@@ -36,9 +36,12 @@ set(SOURCE_FILES
 set(HEADER_FILES 
         ${INCLUDE_DIR}/PluginEditor.h 
         ${INCLUDE_DIR}/PluginProcessor.h 
-        ${INCLUDE_DIR}/DelayEffect.h 
-        ${INCLUDE_DIR}/CircularBuffer.h 
-        ${INCLUDE_DIR}/OnePole.h
+        ${INCLUDE_DIR}/DSP/DelayEffect.h 
+        ${INCLUDE_DIR}/DSP/CircularBuffer.h 
+        ${INCLUDE_DIR}/DSP/OnePole.h
+        ${INCLUDE_DIR}/DSP/Schroeder.h
+        ${INCLUDE_DIR}/DSP/Diffuser.h
+        ${INCLUDE_DIR}/DSP/IAudioFilter.h
 )
 
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCE_FILES} ${HEADER_FILES})

@@ -3,7 +3,9 @@
 
 #include "CircularBuffer.h"
 #include "OnePole.h"
+#include "Diffuser.h"
 #include <juce_audio_processors/juce_audio_processors.h>
+
 
 class DelayEffect
 {
@@ -22,6 +24,8 @@ private:
     int m_loopFilterType;
     int m_lastLoopFilterType;
     float m_loopFilterCutoff;
+    
+    float m_diffusion;
 
     std::vector<CircularBuffer<float>> m_delayBuffers;
     OnePole<float> m_delayTimeLowPass; 
@@ -29,9 +33,12 @@ private:
     OnePole<float> m_loopFilterLeft;
     OnePole<float> m_loopFilterRight;
     
+    Diffuser<float> m_diffuserLeft;
+    Diffuser<float> m_diffuserRight;
+
     void initDelayBuffers();
     void clearDelayBuffers();
-
+    
 public:
     DelayEffect();
     ~DelayEffect();
