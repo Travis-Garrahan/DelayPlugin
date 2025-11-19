@@ -10,8 +10,11 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     // editor's size to whatever you need it to be.
 
     setSize(400, 300);
+    setResizable(true, true);
+    setResizeLimits(400, 300, 2000, 1500);
 
     juce::AudioProcessorValueTreeState& apvts = processorRef.getAPVTS();
+
 
     // Delay Time
     delayTimeSlider.setLookAndFeel(&customLookAndFeel);
@@ -82,11 +85,9 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     // Background image
-    const int backgroundImageDataSize = BinaryData::background_jpgSize;
-    backgroundImage = juce::ImageCache::getFromMemory(BinaryData::background_jpg, backgroundImageDataSize);
+
+    backgroundImage = juce::ImageCache::getFromMemory(BinaryData::newbg_jpg, BinaryData::newbg_jpgSize);
     g.drawImageAt(backgroundImage, 0, 0);
-
-
 }
 
 void AudioPluginAudioProcessorEditor::resized()
@@ -105,6 +106,8 @@ void AudioPluginAudioProcessorEditor::resized()
 
     feedbackSlider.setBounds(getWidth() / 2 - sliderWidth / 2, getHeight() / 2, sliderWidth, sliderHeight);
     feedbackLabel.setBounds(getWidth() / 2 - sliderWidth / 2, getHeight() / 2 + sliderHeight, labelWidth, labelHeight);
+
+
 
 
     int toggleWidth = 30;

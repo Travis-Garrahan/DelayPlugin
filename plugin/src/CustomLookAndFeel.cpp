@@ -6,6 +6,10 @@
 
 CustomLookAndFeel::CustomLookAndFeel()
 {
+    setDefaultSansSerifTypeface(customTypeface);
+    
+
+    setDefaultLookAndFeel(this);
     knobDrawable = juce::Drawable::createFromImageData(BinaryData::knob_svg, BinaryData::knob_svgSize);
 }
 
@@ -26,5 +30,4 @@ void CustomLookAndFeel::drawRotarySlider(juce::Graphics &g, int x, int y, int wi
                                                            static_cast<float>(height)),
                                  juce::RectanglePlacement::centred, 1.0f);
     }
-
 }

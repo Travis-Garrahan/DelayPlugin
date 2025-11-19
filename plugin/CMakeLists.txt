@@ -24,6 +24,8 @@ juce_add_plugin(${PROJECT_NAME}
 juce_add_binary_data(DelayBinaryData
     SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/assets/background.jpg
         ${CMAKE_CURRENT_SOURCE_DIR}/src/assets/knob.svg
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/assets/Manbow\ Clear.otf
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/assets/new-bg.jpg
 )
 
 # set source files of plugin project
