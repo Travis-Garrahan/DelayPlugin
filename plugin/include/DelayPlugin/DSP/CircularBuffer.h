@@ -17,8 +17,6 @@ class CircularBuffer
     static_assert(std::is_floating_point_v<FloatType> == true, "template type must be float or double");
 
 public:
-    // size of buffer
-    const size_t size;
 
     /*
     * creates CircularBuffer of size n
@@ -96,7 +94,25 @@ public:
     {
         std::fill(data.begin(), data.end(), value);
     }
+
+
+    size_t getSize()
+    {
+        return size;
+    }
+
+
+    void resize(size_t n)
+    {
+        // ensure buffer size is power of 2:
+        assert(static_cast<int>(n) == juce::nextPowerOfTwo(static_cast<int>(n)));
+        size = n;
+    }
+
 private:
+     // size of buffer
+    size_t size;
+   
     // vector containing underlying data
     std::vector<FloatType> data;
 

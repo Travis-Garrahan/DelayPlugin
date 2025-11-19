@@ -66,10 +66,6 @@ template<std::floating_point FloatType>
 Schroeder<FloatType>::Schroeder(unsigned int delayInSamples, FloatType gain) 
     : m_gain{gain}, m_delayInSamples{delayInSamples}, 
       m_delayBuffer(juce::nextPowerOfTwo(delayInSamples), FloatType(0))
-      
-//      m_delayBuffer(new CircularBuffer<FloatType>(
-//                            juce::nextPowerOfTwo(delayInSamples), 
-//                            FloatType(0)))
 {
     if ( (gain < FloatType(0)) || (gain > FloatType(1)) )
         throw std::invalid_argument("gain must be between 0 and 1");
@@ -131,7 +127,11 @@ void Schroeder<FloatType>::setGain(FloatType gain)
 template <std::floating_point FloatType>
 void Schroeder<FloatType>::setDelaySamples(unsigned int delayInSamples)
 {
-    // FIXME: Needs implementation 
+    // Resize the circular buffer if necessary
+    if (delayInSamples >= m_delayBuffer.getSize())
+        m_delayBuffer.resize(juce::nextPowerOfTwo(delayInSamples));
+
+    m_delayInSamples = delayInSamples;
 }
 
 
@@ -141,7 +141,7 @@ void Schroeder<FloatType>::setDelaySamples(unsigned int delayInSamples)
 template <std::floating_point FloatType>
 void Schroeder<FloatType>::clear()
 {
-    m_delayBuffer->clear();
+    m_delayBuffer.clear();
 }
 
 #endif // SCHROEDER_H

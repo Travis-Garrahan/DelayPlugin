@@ -55,6 +55,8 @@ void DelayEffect::releaseResources()
     m_delayTimeLowPass.clear();
     m_loopFilterLeft.clear();
     m_loopFilterRight.clear();
+    m_diffuserLeft.clear();
+    m_diffuserRight.clear();
 }
 
 void DelayEffect::setParametersFromAPVTS(juce::AudioProcessorValueTreeState& apvts)
@@ -145,7 +147,7 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
 
         // Clamp readIndex to ensure it stays within bounds. 
         int readIndex = std::clamp(delayInSamples, 0, static_cast<int>(
-                                                delayBufferLeft.size - 1));
+                                                delayBufferLeft.getSize() - 1));
 
         // Get delayed outputs and apply feedback gain.
         float delayedLeft = m_feedback * delayBufferLeft[readIndex];
