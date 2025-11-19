@@ -98,10 +98,7 @@ Schroeder<FloatType>::~Schroeder()
 template<std::floating_point FloatType>
 FloatType Schroeder<FloatType>::getNextSample(FloatType x)
 {
-    unsigned int readIndex = static_cast<unsigned int>(
-                                m_delayBuffer.size) - m_delayInSamples;
-    
-    FloatType delayed = m_delayBuffer[readIndex];
+    FloatType delayed = m_delayBuffer[m_delayInSamples];
     FloatType mixed = x + m_gain * delayed;
     FloatType y = -m_gain * mixed + delayed;
 

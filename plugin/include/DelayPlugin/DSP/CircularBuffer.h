@@ -50,11 +50,11 @@ public:
      * @param x: the index
      * @return a reference to the buffer element
     */
-    FloatType &operator[](size_t x)
-    {
-        assert(x >= 0 && x < size);
-        return data[mask(firstElement + x)];
-    }
+    // FloatType &operator[](size_t x)
+    // {
+    //     assert(x >= 0 && x < size);
+    //     return data[mask(firstElement + x)];
+    // }
 
     /*
      * Returns a copy of the buffer element at the given index

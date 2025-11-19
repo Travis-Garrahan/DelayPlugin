@@ -142,10 +142,9 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
 
         // Get read index from current delay time.
         int delayInSamples = static_cast<int>(currentDelayTimeSeconds * m_sampleRate);
-        int readIndex = static_cast<int>(delayBufferLeft.size) - delayInSamples;
 
         // Clamp readIndex to ensure it stays within bounds. 
-        readIndex = std::clamp(readIndex, 0, static_cast<int>(
+        int readIndex = std::clamp(delayInSamples, 0, static_cast<int>(
                                                 delayBufferLeft.size - 1));
 
         // Get delayed outputs and apply feedback gain.
