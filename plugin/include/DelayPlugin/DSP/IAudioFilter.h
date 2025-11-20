@@ -14,8 +14,9 @@
 #include <concepts>
 
 /**
+ * @interface IAudioFilter
+ *
  * @brief Interface for audio processing objects.
- * @author Russell Brown
  */
 template <std::floating_point FloatType>
 class IAudioFilter

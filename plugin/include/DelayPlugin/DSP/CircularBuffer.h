@@ -96,12 +96,14 @@ public:
     }
 
 
+    // Return the size of the buffer
     size_t getSize()
     {
         return size;
     }
 
 
+    // Resize the buffer (buffer size must be a power of 2)
     void resize(size_t n)
     {
         // ensure buffer size is power of 2:

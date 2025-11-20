@@ -44,8 +44,6 @@ public:
     void setGains(const std::vector<FloatType>& gains);
 };
 
-// TODO: Add methods setDelaySizes and setGains
-
 
 // Constructor
 /**
