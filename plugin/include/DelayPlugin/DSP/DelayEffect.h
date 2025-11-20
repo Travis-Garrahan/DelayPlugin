@@ -37,7 +37,7 @@ private:
     Diffuser<float> m_diffuserRight;
 
     void initDelayBuffers();
-    void clearDelayBuffers();
+    void clear();
     
 public:
     DelayEffect();

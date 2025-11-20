@@ -51,12 +51,8 @@ void DelayEffect::prepareToPlay(double sampleRate)
 
 void DelayEffect::releaseResources()
 {
-    clearDelayBuffers();
+    clear();
     m_delayTimeLowPass.clear();
-    m_loopFilterLeft.clear();
-    m_loopFilterRight.clear();
-    m_diffuserLeft.clear();
-    m_diffuserRight.clear();
 }
 
 void DelayEffect::setParametersFromAPVTS(juce::AudioProcessorValueTreeState& apvts)
@@ -82,13 +78,13 @@ void DelayEffect::update()
     // Check if toggle values changed. Clear delay buffers if so
     if (m_isBypassOn != m_lastIsBypassOn)
     {
-        clearDelayBuffers();
+        clear();
         m_lastIsBypassOn = m_isBypassOn;
     }
  
     if (m_isPingPongOn != m_lastIsPingPongOn)
     {
-        clearDelayBuffers();
+        clear();
         m_lastIsPingPongOn = m_isPingPongOn;
     }
 
@@ -197,8 +193,15 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
 }
 
 
-void DelayEffect::clearDelayBuffers()
+void DelayEffect::clear()
 {
+    // Clear delay buffers
     for (auto& delayBuffer : m_delayBuffers)
         delayBuffer.clear();
+
+    m_diffuserLeft.clear();
+    m_diffuserRight.clear();
+
+    m_loopFilterLeft.clear();
+    m_loopFilterRight.clear();
 }
