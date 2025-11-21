@@ -22,7 +22,6 @@ private:
 
     juce::Image backgroundImage;
 
-
     AudioPluginAudioProcessor& processorRef;
     
     juce::Slider delayTimeSlider;
@@ -37,7 +36,6 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mixSliderAttachment;
     juce::Label mixLabel;
 
-
     juce::ToggleButton pingPongToggleButton;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> pingPongToggleButtonAttachment;
     juce::Label pingPongLabel;
@@ -46,6 +44,17 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> bypassToggleButtonAttachment;
     juce::Label bypassLabel;
 
+    // Loop filter cutoff
+    juce::Slider loopFilterCutoffSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> loopFilterCutoffSliderAttachment;
+
+    // Loop filter type
+    juce::ComboBox loopFilterTypeComboBox;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> loopFilterTypeComboBoxAttachment;
+
+    // Diffusion slider
+    juce::Slider diffusionSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> diffusionSliderAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };

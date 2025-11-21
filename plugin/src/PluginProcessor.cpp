@@ -10,9 +10,7 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       ), m_apvts (*this, nullptr, "Parameters", createParameters()), 
-                          m_lastIsPingPongEnabled(false),
-			              m_lastIsBypassEnabled(false)
+                       ), m_apvts (*this, nullptr, "Parameters", createParameters()) 
 {
 }
 
@@ -89,29 +87,8 @@ void AudioPluginAudioProcessor::changeProgramName (int index, const juce::String
 void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     // Initialization before playback 
+    m_delayEffect.prepareToPlay(sampleRate);
     
-    m_sampleRate = sampleRate;
-
-    // Initialize delay buffers
-    const float MAX_DELAY_SECONDS = 2.0f;
-    int maxDelaySamples = static_cast<int>(MAX_DELAY_SECONDS * sampleRate);
-
-    // Find next power of 2 for buffer size		
-    int bufferSize = 1;
-    while (bufferSize < maxDelaySamples) 
-        bufferSize <<= 1;
-    
-    m_delayBuffers.clear();
-    m_delayBuffers.reserve(static_cast<size_t>(getTotalNumOutputChannels()));
-
-    // One circular buffer for each channel
-    for (int ch = 0; ch < getTotalNumOutputChannels(); ++ch)
-        m_delayBuffers.emplace_back(bufferSize, 0.0f);
-    
-    // Initialize lowpass filter
-    m_lowPass.setSampleRate(static_cast<unsigned int>(sampleRate));
-    m_lowPass.setCutoff(1.0f); // 1 Hz
-
     juce::ignoreUnused(samplesPerBlock);
 }
 
@@ -119,12 +96,7 @@ void AudioPluginAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
-    for (auto& buffer : m_delayBuffers)
-    {
-        buffer.clear();
-    }
-
-    m_lowPass.clear();
+    m_delayEffect.releaseResources();
 }
 
 bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -157,101 +129,11 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::ignoreUnused(midiMessages);
     juce::ScopedNoDenormals noDenormals;
 
-    // Must have 2 channels for ping pong delay.
-    if (buffer.getNumChannels() < 2)
-        return;
+    m_delayEffect.setParametersFromAPVTS(m_apvts);
+    m_delayEffect.update();
 
-    // Get current parameter values. These values are read once per block.
-    float mix = *m_apvts.getRawParameterValue("MIX");
-    float feedback = *m_apvts.getRawParameterValue("FEEDBACK");
-    float delayTimeSeconds = *m_apvts.getRawParameterValue("DELAY_TIME") / 1000.0f;    
-    bool isPingPongEnabled = *m_apvts.getRawParameterValue("IS_PING_PONG_ENABLED");
-    bool isBypassEnabled = *m_apvts.getRawParameterValue("IS_BYPASS_ENABLED");
-
-    // If effect bypass is toggled on/off, clear the delay buffers
-    if (isBypassEnabled != m_lastIsBypassEnabled)
-    {
-        for (auto& delayBuffer : m_delayBuffers)
-            delayBuffer.clear();
-
-        m_lastIsBypassEnabled = isBypassEnabled;
-    }
- 
-    // Return to bypass effect
-    if (isBypassEnabled == true)
-        return;
-
-    // If ping pong is toggled on/off, clear the delay buffers
-    if (isPingPongEnabled != m_lastIsPingPongEnabled)
-    {
-        for (auto& delayBuffer : m_delayBuffers)
-            delayBuffer.clear();
-
-        m_lastIsPingPongEnabled = isPingPongEnabled;
-    }
-
-   
-    // Get left and right audio buffers. Each buffer contains the input data. 
-    // Data is processed by overwriting it.
-    auto* channelDataLeft = buffer.getWritePointer(0);
-    auto* channelDataRight = buffer.getWritePointer(1);
-
-    // Get left and right delay buffers.
-    auto& delayBufferLeft = m_delayBuffers[0];
-    auto& delayBufferRight = m_delayBuffers[1];
-
-    // Lowpass filter for smoothing the delay time input value. This is not stereo-dependent 
-    // (left and right delay lines should have the same delay time), so we only need one of these.
-    auto& lowPass = m_lowPass; 
-
-    // Loop through each sample
-    for (int i = 0; i < buffer.getNumSamples(); ++i)
-    {
-        // Apply smoothing to delay time slider value. Convert to delay in samples. 
-        float currentDelayTimeSeconds = lowPass.getNextSample(delayTimeSeconds);
-        int delayInSamples = static_cast<int>(currentDelayTimeSeconds * m_sampleRate);
-        
-        // Get the current input sample for each channel
-        float inLeft = channelDataLeft[i];
-        float inRight = channelDataRight[i];
-        
-        // Get delayed outputs and apply feedback gain
-        float delayedLeft = feedback * delayBufferLeft[static_cast<int>(delayBufferLeft.size) - delayInSamples];
-        float delayedRight = feedback * delayBufferRight[static_cast<int>(delayBufferRight.size) - delayInSamples];
-
-        // Write to each delay buffer to implement the feedback loop.
-        // 
-        // 2 possible configurations: 
-        //
-        //   Normal:      Left delay output is fed back into the LEFT delay input, and right delay output is fed back into 
-        //                RIGHT delay input. The left and right channels have their own independent feedback loops. 
-        //
-        //   Ping pong:   Left delay output is fed into the RIGHT delay input and vice versa. The left and right delays are 
-        //                coupled/fed back into one another. This creates the effect of successive delayed outputs bouncing 
-        //                between the left and right channels. The input data is first mixed down to mono so that audio from 
-        //                both channels enters the feedback loop.
-        //
-        if (isPingPongEnabled == true)
-        {
-            // Mix left and right channels down to mono
-            float inMono = (inLeft + inRight) / 2.0f;
-
-            // Feed left and right delay buffers into eachother. Incomming audio will be fed into the left delay.
-            delayBufferLeft.push(inMono + delayedRight);
-            delayBufferRight.push(delayedLeft);
-        }
-	    else
-        {
-            // Normal delay mode: Independent feedback loop for each channel. 
-            // Mix incomming audio with delayed output and feed it back into the delay buffer. 
-            delayBufferLeft.push(inLeft + delayedLeft);
-            delayBufferRight.push(inRight + delayedRight);
-        }
-        
-        // Get output audio for each channel. Mix dry signal with wet signal             
-        channelDataLeft[i] = (1.0f - mix) * inLeft + mix * delayedLeft;	    
-        channelDataRight[i] = (1.0f - mix) * inRight + mix * delayedRight;
-    }
+    if (buffer.getNumChannels() == 2)
+        m_delayEffect.processAudioBuffer(buffer);
 }
 
 //==============================================================================
@@ -297,8 +179,17 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     params.push_back(std::make_unique<juce::AudioParameterFloat>("DELAY_TIME", "Time", 1.f, 1000.f, 500.f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("FEEDBACK", "Feedback", 0.f, 0.99f, 0.5f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("MIX", "Mix", 0.f, 1.f, 0.5f));
-    params.push_back(std::make_unique<juce::AudioParameterBool>("IS_PING_PONG_ENABLED", "Ping Pong", false));
-    params.push_back(std::make_unique<juce::AudioParameterBool>("IS_BYPASS_ENABLED", "Bypass", false));
+    params.push_back(std::make_unique<juce::AudioParameterBool>("IS_PING_PONG_ON", "Ping Pong", false));
+    params.push_back(std::make_unique<juce::AudioParameterBool>("IS_BYPASS_ON", "Bypass", false));
+    
+    // For logarithmic slider that works with APVTS, need to use a NormalisableRange
+    juce::NormalisableRange<float> loopFilterCutoffRange(0.0f, 20000.0f);
+    loopFilterCutoffRange.setSkewForCentre(500.0f); // 1000
+    
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("LOOP_FILTER_CUTOFF", "Cutoff", loopFilterCutoffRange, 1000.f)); 
+    params.push_back(std::make_unique<juce::AudioParameterChoice>("LOOP_FILTER_TYPE", "Filter Type", juce::StringArray{"Low Pass", "High Pass", "None"}, 2));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("DIFFUSION", "Diffusion", 0.0f, 1.0f, 0.0f));
 
     return { params.begin(), params.end() };
 }

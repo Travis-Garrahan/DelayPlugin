@@ -15,7 +15,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     juce::AudioProcessorValueTreeState& apvts = processorRef.getAPVTS();
 
-
     // Delay Time
     delayTimeSlider.setLookAndFeel(&customLookAndFeel);
     delayTimeSlider.setNumDecimalPlacesToDisplay(0);
@@ -61,7 +60,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     addAndMakeVisible(pingPongToggleButton);
     pingPongToggleButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts,
-        "IS_PING_PONG_ENABLED", pingPongToggleButton);
+        "IS_PING_PONG_ON", pingPongToggleButton);
 
     pingPongLabel.setText("Ping Pong", juce::dontSendNotification);
     addAndMakeVisible(pingPongLabel);
@@ -69,10 +68,36 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     addAndMakeVisible(bypassToggleButton);
     bypassToggleButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts,
-        "IS_BYPASS_ENABLED", bypassToggleButton);
+        "IS_BYPASS_ON", bypassToggleButton);
 
     bypassLabel.setText("Bypass", juce::dontSendNotification);
     addAndMakeVisible(bypassLabel);
+
+
+    // Cutoff
+    loopFilterCutoffSlider.setNumDecimalPlacesToDisplay(0);
+    loopFilterCutoffSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    loopFilterCutoffSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+    //loopFilterCutoffSlider.setSkewFactorFromMidPoint(500);
+    addAndMakeVisible(loopFilterCutoffSlider);
+    loopFilterCutoffSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
+        "LOOP_FILTER_CUTOFF", loopFilterCutoffSlider);
+
+    // Filter type
+    auto* parameter = apvts.getParameter("LOOP_FILTER_TYPE");
+    loopFilterTypeComboBox.addItemList(parameter->getAllValueStrings(), 1);
+
+    addAndMakeVisible(loopFilterTypeComboBox);
+    loopFilterTypeComboBoxAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts,
+        "LOOP_FILTER_TYPE", loopFilterTypeComboBox);
+
+    // Diffusion slider
+    diffusionSlider.setNumDecimalPlacesToDisplay(0);
+    diffusionSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    diffusionSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+    addAndMakeVisible(diffusionSlider);
+    diffusionSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
+        "DIFFUSION", diffusionSlider);
 
 }
 
@@ -85,7 +110,6 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     // Background image
-
     backgroundImage = juce::ImageCache::getFromMemory(BinaryData::newbg_jpg, BinaryData::newbg_jpgSize);
     g.drawImageAt(backgroundImage, 0, 0);
 }
@@ -108,8 +132,6 @@ void AudioPluginAudioProcessorEditor::resized()
     feedbackLabel.setBounds(getWidth() / 2 - sliderWidth / 2, getHeight() / 2 + sliderHeight, labelWidth, labelHeight);
 
 
-
-
     int toggleWidth = 30;
     int toggleHeight = 20;
 
@@ -119,4 +141,9 @@ void AudioPluginAudioProcessorEditor::resized()
     bypassToggleButton.setBounds((int)(getWidth() * 0.5 - toggleWidth), (int)(getHeight() * 0.9), toggleWidth, toggleHeight);
     bypassLabel.setBounds((int)(getWidth() * 0.5 - toggleWidth), (int)(getHeight() * 0.9) - 20, labelWidth, labelHeight);
 
+    loopFilterCutoffSlider.setBounds((int)(getWidth() * 0.75), (int)(getHeight() * 0.9) - sliderHeight, sliderWidth, sliderHeight);
+
+    loopFilterTypeComboBox.setBounds((int)(getWidth() * 0.75), (int)(getHeight() * 0.9), 30, 20);
+
+    diffusionSlider.setBounds(static_cast<int>(getWidth() / 2 - sliderWidth / 2), static_cast<int>(getHeight() / 2 - sliderHeight), sliderWidth, sliderHeight);
 }

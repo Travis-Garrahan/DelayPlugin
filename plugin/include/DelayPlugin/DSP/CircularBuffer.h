@@ -10,8 +10,6 @@
 #include <juce_core/juce_core.h>
 
 
-#endif //SIMPLE_DELAY_CIRCULARBUFFER_H
-
 template<typename FloatType>
 class CircularBuffer
 {
@@ -19,8 +17,6 @@ class CircularBuffer
     static_assert(std::is_floating_point_v<FloatType> == true, "template type must be float or double");
 
 public:
-    // size of buffer
-    const size_t size;
 
     /*
     * creates CircularBuffer of size n
@@ -52,11 +48,11 @@ public:
      * @param x: the index
      * @return a reference to the buffer element
     */
-    FloatType &operator[](size_t x)
-    {
-        assert(x >= 0 && x < size);
-        return data[mask(firstElement + x)];
-    }
+    // FloatType &operator[](size_t x)
+    // {
+    //     assert(x >= 0 && x < size);
+    //     return data[mask(firstElement + x)];
+    // }
 
     /*
      * Returns a copy of the buffer element at the given index
@@ -98,7 +94,27 @@ public:
     {
         std::fill(data.begin(), data.end(), value);
     }
+
+
+    // Return the size of the buffer
+    size_t getSize()
+    {
+        return size;
+    }
+
+
+    // Resize the buffer (buffer size must be a power of 2)
+    void resize(size_t n)
+    {
+        // ensure buffer size is power of 2:
+        assert(static_cast<int>(n) == juce::nextPowerOfTwo(static_cast<int>(n)));
+        size = n;
+    }
+
 private:
+     // size of buffer
+    size_t size;
+   
     // vector containing underlying data
     std::vector<FloatType> data;
 
@@ -118,3 +134,4 @@ private:
         return val & (size - 1);
     }
 };
+#endif //SIMPLE_DELAY_CIRCULARBUFFER_H
