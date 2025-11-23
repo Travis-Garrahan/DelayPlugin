@@ -5,7 +5,6 @@ DelayEffect::DelayEffect() : m_sampleRate{}, m_delayTime{}, m_feedback{},
     m_mix{}, m_isPingPongOn{}, m_lastIsPingPongOn{}, m_isBypassOn{}, 
     m_lastIsBypassOn{}, m_loopFilterType{}, m_lastLoopFilterType{}, 
     m_loopFilterCutoff{}, m_diffusion{},
-
     // Diffuser delay lengths based on Freeverb 
     // ccrma.stanford.edu/~jos/pasp/Freeverb.html
     m_diffuserLeft(4, {225, 556, 441, 341}, {0.7f, 0.7f, 0.7f, 0.7f}), 
@@ -21,22 +20,6 @@ DelayEffect::~DelayEffect()
 }
 
 
-void DelayEffect::initDelayBuffers()
-{
-    int maxDelaySamples = static_cast<int>(MAX_DELAY_SECONDS * m_sampleRate);
-
-    // Find next power of 2 for buffer size
-    int delayBufferSize = 1;
-    while (delayBufferSize < maxDelaySamples)
-        delayBufferSize <<= 1;
-
-    m_delayBuffers.clear();
-    m_delayBuffers.reserve(2);
-    for (int ch = 0; ch < 2; ++ch)
-        m_delayBuffers.emplace_back(delayBufferSize, 0.0f);
-}
-
-
 void DelayEffect::prepareToPlay(double sampleRate)
 {
     m_sampleRate = sampleRate;
@@ -45,7 +28,11 @@ void DelayEffect::prepareToPlay(double sampleRate)
     m_loopFilterLeft.setSampleRate(static_cast<float>(sampleRate));
     m_loopFilterRight.setSampleRate(static_cast<float>(sampleRate));
 
-    initDelayBuffers();
+    m_delayLineLeft.setSampleRate(static_cast<float>(sampleRate));
+    m_delayLineRight.setSampleRate(static_cast<float>(sampleRate));
+
+    m_delayLineLeft.setMaxDelay(MAX_DELAY_SECONDS * 1000.f);
+    m_delayLineRight.setMaxDelay(MAX_DELAY_SECONDS * 1000.f);
 }
 
 
@@ -119,9 +106,6 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
     if (m_isBypassOn == true)
         return;
     
-    auto& delayBufferLeft = m_delayBuffers[0]; 
-    auto& delayBufferRight = m_delayBuffers[1]; 
-
     // Get left and right audio buffers. Each contains the input data, which 
     // is processed by overwriting it
     auto* channelDataLeft = buffer.getWritePointer(0);
@@ -135,19 +119,14 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
         float inputRight = channelDataRight[i];
 
         // Apply smoothing to delay time slider value.
-        float currentDelayTimeSeconds = m_delayTimeLowPass.getNextSample(
-                                            m_delayTime) / 1000.0f;
+        float currentDelayMs = m_delayTimeLowPass.getNextSample(m_delayTime);
 
-        // Get read index from current delay time.
-        int delayInSamples = static_cast<int>(currentDelayTimeSeconds * m_sampleRate);
-
-        // Clamp readIndex to ensure it stays within bounds. 
-        int readIndex = std::clamp(delayInSamples, 0, static_cast<int>(
-                                                delayBufferLeft.getSize() - 1));
+        m_delayLineLeft.setDelay(currentDelayMs);
+        m_delayLineRight.setDelay(currentDelayMs);
 
         // Get delayed outputs and apply feedback gain.
-        float delayedLeft = m_feedback * delayBufferLeft[readIndex];
-        float delayedRight = m_feedback * delayBufferRight[readIndex];
+        float delayedLeft = m_feedback * m_delayLineLeft.read();
+        float delayedRight = m_feedback * m_delayLineRight.read();
 
         // Apply filter to delay output
         if (m_loopFilterType != 2)
@@ -172,14 +151,14 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
 
             // Feed left and right delay buffers into eachother. 
             // Incomming audio will be fed into the left delay.
-            delayBufferLeft.push(inputMono + delayedRight);
-            delayBufferRight.push(delayedLeft);
+            m_delayLineLeft.write(inputMono + delayedRight);
+            m_delayLineRight.write(delayedLeft);
         }
         else
         {
             // Independent feedback loop for each channel. 
-            delayBufferLeft.push(inputLeft + delayedLeft);
-            delayBufferRight.push(inputRight + delayedRight);
+            m_delayLineLeft.write(inputLeft + delayedLeft);
+            m_delayLineRight.write(inputRight + delayedRight);
         }
         
         // Get output audio for each channel. Mix dry signal with wet signal             
@@ -195,9 +174,8 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
 
 void DelayEffect::clear()
 {
-    // Clear delay buffers
-    for (auto& delayBuffer : m_delayBuffers)
-        delayBuffer.clear();
+    m_delayLineLeft.clear();
+    m_delayLineRight.clear();
 
     m_diffuserLeft.clear();
     m_diffuserRight.clear();

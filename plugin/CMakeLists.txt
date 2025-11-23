@@ -42,6 +42,7 @@ set(HEADER_FILES
         ${INCLUDE_DIR}/DSP/Schroeder.h
         ${INCLUDE_DIR}/DSP/Diffuser.h
         ${INCLUDE_DIR}/DSP/IAudioFilter.h
+        ${INCLUDE_DIR}/DSP/DelayLine.h
 )
 
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCE_FILES} ${HEADER_FILES})

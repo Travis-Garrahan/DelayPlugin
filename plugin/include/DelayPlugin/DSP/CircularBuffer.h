@@ -109,6 +109,7 @@ public:
         // ensure buffer size is power of 2:
         assert(static_cast<int>(n) == juce::nextPowerOfTwo(static_cast<int>(n)));
         size = n;
+        data.resize(n);
     }
 
 private:
