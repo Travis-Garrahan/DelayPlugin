@@ -23,6 +23,20 @@ private:
     CustomLookAndFeel customLookAndFeel;
     juce::Image backgroundImage;
 
+    // helper function
+    void createSliderAndLabel(juce::Slider *slider, juce::Label *label, const juce::String &labelText, CustomLookAndFeel &_customLookAndFeel)
+    {
+        slider->setLookAndFeel(&_customLookAndFeel);
+        slider->setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+        slider->setNumDecimalPlacesToDisplay(3);
+        slider->setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+        addAndMakeVisible(slider);
+
+        label->setText(labelText, juce::dontSendNotification);
+        label->setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(label);
+    }
+
     // Mix
     juce::Slider mixSlider;
     juce::Label mixLabel;
@@ -41,6 +55,7 @@ private:
     // Loop filter
     juce::Slider loopFilterCutoffSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> loopFilterCutoffSliderAttachment;
+    juce::Label loopFilterCutoffLabel;
     // Loop filter type
     juce::ComboBox loopFilterTypeComboBox;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> loopFilterTypeComboBoxAttachment;
@@ -48,10 +63,12 @@ private:
     // Diffusion
     juce::Slider diffusionSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> diffusionSliderAttachment;
+    juce::Label diffusionLabel;
 
     // Ping Pong Toggle
     juce::ToggleButton pingPongToggleButton;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> pingPongToggleButtonAttachment;
+    juce::Label pingPongLabel;
 
     // Bypass
     juce::ToggleButton bypassToggleButton;

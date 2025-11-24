@@ -8,55 +8,25 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     juce::ignoreUnused (processorRef);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-
-    setSize(400, 300);
+    setSize(800, 600);
     setResizable(true, true);
     setResizeLimits(400, 300, 2000, 1500);
 
     juce::AudioProcessorValueTreeState& apvts = processorRef.getAPVTS();
 
     // Delay Time
-    delayTimeSlider.setLookAndFeel(&customLookAndFeel);
-    delayTimeSlider.setNumDecimalPlacesToDisplay(0);
-    delayTimeSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    delayTimeSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    addAndMakeVisible(delayTimeSlider);
-
-    // Attach the delay Time slider to the AudioProcessorValueTreeState
+    createSliderAndLabel(&delayTimeSlider, &delayTimeLabel, "Time", customLookAndFeel);
     delayTimeSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
         "DELAY_TIME", delayTimeSlider);
 
-    delayTimeLabel.setText("Time", juce::dontSendNotification);
-    delayTimeLabel.setJustificationType(juce::Justification::centred);
-    addAndMakeVisible(delayTimeLabel);
-    //delayTimeLabel.attachToComponent(&delayTimeSlider, true);
-
     // Feedback
-    feedbackSlider.setLookAndFeel(&customLookAndFeel);
-    feedbackSlider.setNumDecimalPlacesToDisplay(3);
-    feedbackSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    feedbackSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    addAndMakeVisible(feedbackSlider);
-
-    feedbackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
-        "FEEDBACK", feedbackSlider);
-
-    feedbackLabel.setText("Feedback", juce::dontSendNotification);
-    feedbackLabel.setJustificationType(juce::Justification::centred);
-    addAndMakeVisible(feedbackLabel);
+    createSliderAndLabel(&feedbackSlider, &feedbackLabel, "Feedback", customLookAndFeel);
+    feedbackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Feedback", feedbackSlider);
 
     // Mix
-    mixSlider.setLookAndFeel(&customLookAndFeel);
-    mixSlider.setNumDecimalPlacesToDisplay(3);
-    mixSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    mixSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    addAndMakeVisible(mixSlider);
-
+    createSliderAndLabel(&mixSlider, &mixLabel, "Mix", customLookAndFeel);
     mixSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
         "MIX", mixSlider);
-    mixLabel.setText("Mix", juce::dontSendNotification);
-    mixLabel.setJustificationType(juce::Justification::centred);
-    addAndMakeVisible(mixLabel);
 
     addAndMakeVisible(pingPongToggleButton);
     pingPongToggleButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts,
@@ -65,7 +35,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     pingPongLabel.setText("Ping Pong", juce::dontSendNotification);
     addAndMakeVisible(pingPongLabel);
 
-
     addAndMakeVisible(bypassToggleButton);
     bypassToggleButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts,
         "IS_BYPASS_ON", bypassToggleButton);
@@ -73,13 +42,8 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     bypassLabel.setText("Bypass", juce::dontSendNotification);
     addAndMakeVisible(bypassLabel);
 
-
     // Cutoff
-    loopFilterCutoffSlider.setNumDecimalPlacesToDisplay(0);
-    loopFilterCutoffSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    loopFilterCutoffSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    //loopFilterCutoffSlider.setSkewFactorFromMidPoint(500);
-    addAndMakeVisible(loopFilterCutoffSlider);
+    createSliderAndLabel(&loopFilterCutoffSlider, &loopFilterCutoffLabel, "Loop Filter", customLookAndFeel);
     loopFilterCutoffSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
         "LOOP_FILTER_CUTOFF", loopFilterCutoffSlider);
 
@@ -92,18 +56,13 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
         "LOOP_FILTER_TYPE", loopFilterTypeComboBox);
 
     // Diffusion slider
-    diffusionSlider.setNumDecimalPlacesToDisplay(0);
-    diffusionSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    diffusionSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    addAndMakeVisible(diffusionSlider);
+    createSliderAndLabel(&diffusionSlider, &diffusionLabel, "Diffusion", customLookAndFeel);
     diffusionSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
         "DIFFUSION", diffusionSlider);
-
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
-{
-}
+= default;
 
 //==============================================================================
 void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
@@ -114,36 +73,51 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
     g.drawImageAt(backgroundImage, 0, 0);
 }
 
-void AudioPluginAudioProcessorEditor::resized()
-{
+void AudioPluginAudioProcessorEditor::resized() {
     // Lay out the GUI components
     int sliderWidth = 80;
     int sliderHeight = 80;
     int labelWidth = 80;
     int labelHeight = 15;
 
-    mixSlider.setBounds( (int)(getWidth() * 0.15), getHeight() / 2 - sliderHeight, sliderWidth, sliderHeight);
-    mixLabel.setBounds( (int)(getWidth() * 0.15), getHeight() / 2, labelWidth, labelHeight);
-    
-    delayTimeSlider.setBounds((int)(getWidth() * 0.85) - sliderWidth, getHeight() / 2 - sliderHeight, sliderWidth, sliderHeight);
-    delayTimeLabel.setBounds((int)(getWidth() * 0.85) - sliderWidth, getHeight() / 2, labelWidth, labelHeight);
+    mixSlider.setBounds((int) (getWidth() * 0.15), getHeight() / 2 - sliderHeight, sliderWidth, sliderHeight);
+    mixLabel.setBounds((int) (getWidth() * 0.15), getHeight() / 2, labelWidth, labelHeight);
+
+    delayTimeSlider.setBounds((int) (getWidth() * 0.85) - sliderWidth, getHeight() / 2 - sliderHeight, sliderWidth,
+                              sliderHeight);
+    delayTimeLabel.setBounds((int) (getWidth() * 0.85) - sliderWidth, getHeight() / 2, labelWidth, labelHeight);
 
     feedbackSlider.setBounds(getWidth() / 2 - sliderWidth / 2, getHeight() / 2, sliderWidth, sliderHeight);
     feedbackLabel.setBounds(getWidth() / 2 - sliderWidth / 2, getHeight() / 2 + sliderHeight, labelWidth, labelHeight);
 
-
     int toggleWidth = 30;
     int toggleHeight = 20;
 
-    pingPongToggleButton.setBounds((int)(getWidth() * 0.15), (int)(0.9 * getHeight()), toggleWidth, toggleHeight);
-    pingPongLabel.setBounds((int)(getWidth() * 0.15), (int)(0.9 * getHeight())- 20, labelWidth, labelHeight);
+    pingPongToggleButton.setBounds(static_cast<int>(getWidth() * 0.15),
+                                   static_cast<int>(0.9 * getHeight()),
+                                   toggleWidth, toggleHeight);
+    pingPongLabel.setBounds(static_cast<int>(getWidth() * 0.15),
+                            static_cast<int>(0.9 * getHeight()) - 20,
+                            labelWidth, labelHeight);
 
-    bypassToggleButton.setBounds((int)(getWidth() * 0.5 - toggleWidth), (int)(getHeight() * 0.9), toggleWidth, toggleHeight);
-    bypassLabel.setBounds((int)(getWidth() * 0.5 - toggleWidth), (int)(getHeight() * 0.9) - 20, labelWidth, labelHeight);
+    bypassToggleButton.setBounds(static_cast<int>(getWidth() * 0.5 - toggleWidth),
+                                 static_cast<int>(getHeight() * 0.9),
+                                 toggleWidth, toggleHeight);
+    bypassLabel.setBounds(static_cast<int>(getWidth() * 0.5 - toggleWidth),
+                          static_cast<int>(getHeight() * 0.9) - 20,
+                          labelWidth, labelHeight);
 
-    loopFilterCutoffSlider.setBounds((int)(getWidth() * 0.75), (int)(getHeight() * 0.9) - sliderHeight, sliderWidth, sliderHeight);
+    loopFilterCutoffSlider.setBounds(static_cast<int>(getWidth() * 0.75),
+                                     static_cast<int>(getHeight() * 0.9) - sliderHeight,
+                                     sliderWidth, sliderHeight);
+    loopFilterTypeComboBox.setBounds(static_cast<int>(getWidth() * 0.75),
+                                     (int) (getHeight() * 0.9),
+                                     30, 20);
 
-    loopFilterTypeComboBox.setBounds((int)(getWidth() * 0.75), (int)(getHeight() * 0.9), 30, 20);
-
-    diffusionSlider.setBounds(static_cast<int>(getWidth() / 2 - sliderWidth / 2), static_cast<int>(getHeight() / 2 - sliderHeight), sliderWidth, sliderHeight);
+    diffusionSlider.setBounds(static_cast<int>(getWidth() / 2 - sliderWidth / 2),
+                              static_cast<int>(getHeight() / 3 - sliderHeight) - 50,
+                              sliderWidth, sliderHeight);
+    diffusionLabel.setBounds(static_cast<int>(getWidth() / 2 - sliderWidth / 2),
+                             static_cast<int>(getHeight() / 3 - sliderHeight),
+                             sliderWidth, sliderHeight);
 }
