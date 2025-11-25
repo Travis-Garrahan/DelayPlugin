@@ -28,14 +28,11 @@ private:
     float m_diffusion;
 
     std::vector<CircularBuffer<float>> m_delayBuffers;
+    std::vector<OnePole<float>> m_loopFilters;
+    std::vector<Diffuser<float>> m_diffusers;
+
     OnePole<float> m_delayTimeLowPass; 
-
-    OnePole<float> m_loopFilterLeft;
-    OnePole<float> m_loopFilterRight;
     
-    Diffuser<float> m_diffuserLeft;
-    Diffuser<float> m_diffuserRight;
-
     void initDelayBuffers();
     void clear();
     

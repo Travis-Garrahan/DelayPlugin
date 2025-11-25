@@ -1,18 +1,25 @@
 #include "DelayPlugin/DSP/DelayEffect.h"
 #include <algorithm>
 
+
 DelayEffect::DelayEffect() : m_sampleRate{}, m_delayTime{}, m_feedback{}, 
     m_mix{}, m_isPingPongOn{}, m_lastIsPingPongOn{}, m_isBypassOn{}, 
     m_lastIsBypassOn{}, m_loopFilterType{}, m_lastLoopFilterType{}, 
-    m_loopFilterCutoff{}, m_diffusion{},
-
-    // Diffuser delay lengths based on Freeverb 
-    // ccrma.stanford.edu/~jos/pasp/Freeverb.html
-    m_diffuserLeft(4, {225, 556, 441, 341}, {0.7f, 0.7f, 0.7f, 0.7f}), 
-    m_diffuserRight(4, {225, 556, 441, 341}, {0.7f, 0.7f, 0.7f, 0.7f})
+    m_loopFilterCutoff{}, m_diffusion{}
 {
     // Delay time smoothing filter will have a fixed cutoff frequency of 1 Hz.
     m_delayTimeLowPass.setCutoff(1.0f); 
+
+    for (int channel = 0; channel < 2; channel++)
+    {
+        m_loopFilters.emplace_back(); 
+
+        // Diffuser delay lengths based on Freeverb 
+        // ccrma.stanford.edu/~jos/pasp/Freeverb.html
+        m_diffusers.emplace_back(4, 
+                        std::vector<unsigned int>{225, 556, 441, 341}, 
+                            std::vector<float>{0.7f, 0.7f, 0.7f, 0.7f});
+    }
 }
 
 
@@ -40,10 +47,13 @@ void DelayEffect::initDelayBuffers()
 void DelayEffect::prepareToPlay(double sampleRate)
 {
     m_sampleRate = sampleRate;
+
     m_delayTimeLowPass.setSampleRate(static_cast<float>(sampleRate));
     
-    m_loopFilterLeft.setSampleRate(static_cast<float>(sampleRate));
-    m_loopFilterRight.setSampleRate(static_cast<float>(sampleRate));
+    for (auto& filter : m_loopFilters)
+    {
+        filter.setSampleRate(static_cast<float>(sampleRate));
+    }
 
     initDelayBuffers();
 }
@@ -94,12 +104,16 @@ void DelayEffect::update()
         switch (m_loopFilterType)
         {
             case 0:
-                m_loopFilterLeft.setFilterType(FilterType::lowPass);
-                m_loopFilterRight.setFilterType(FilterType::lowPass);
+                for (auto& filter : m_loopFilters)
+                {
+                    filter.setFilterType(FilterType::lowPass);
+                }
                 break;
             case 1:
-                m_loopFilterLeft.setFilterType(FilterType::highPass);
-                m_loopFilterRight.setFilterType(FilterType::highPass);
+                for (auto& filter : m_loopFilters)
+                {
+                    filter.setFilterType(FilterType::highPass);
+                }
                 break;
             default:
                 // Do nothing
@@ -109,8 +123,10 @@ void DelayEffect::update()
         m_lastLoopFilterType = m_loopFilterType;
     }
 
-    m_loopFilterLeft.setCutoff(m_loopFilterCutoff);
-    m_loopFilterRight.setCutoff(m_loopFilterCutoff);
+    for (auto& filter : m_loopFilters)
+    {
+        filter.setCutoff(m_loopFilterCutoff);
+    }
 }
 
 
@@ -152,17 +168,17 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
         // Apply filter to delay output
         if (m_loopFilterType != 2)
         {
-            delayedLeft = m_loopFilterLeft.getNextSample(delayedLeft);
-            delayedRight = m_loopFilterRight.getNextSample(delayedRight);
+            delayedLeft = m_loopFilters[0].getNextSample(delayedLeft);
+            delayedRight = m_loopFilters[1].getNextSample(delayedRight);
         }
 
         // Apply diffusion. The diffusion amount is controlled by cross-fading 
         // between the diffuser input and output
         delayedLeft = (1.0f - m_diffusion) * delayedLeft 
-            + m_diffusion * m_diffuserLeft.getNextSample(delayedLeft);
+            + m_diffusion * m_diffusers[0].getNextSample(delayedLeft);
         
         delayedRight = (1.0f - m_diffusion) * delayedRight 
-            + m_diffusion * m_diffuserRight.getNextSample(delayedRight);
+            + m_diffusion * m_diffusers[1].getNextSample(delayedRight);
 
         // Determine feedback configuration 
         if (m_isPingPongOn == true)
@@ -195,13 +211,10 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
 
 void DelayEffect::clear()
 {
-    // Clear delay buffers
-    for (auto& delayBuffer : m_delayBuffers)
-        delayBuffer.clear();
-
-    m_diffuserLeft.clear();
-    m_diffuserRight.clear();
-
-    m_loopFilterLeft.clear();
-    m_loopFilterRight.clear();
+    for (int channel = 0; channel < 2; channel++)
+    {
+        m_delayBuffers[channel].clear();
+        m_loopFilters[channel].clear();
+        m_diffusers[channel].clear();
+    }
 }
