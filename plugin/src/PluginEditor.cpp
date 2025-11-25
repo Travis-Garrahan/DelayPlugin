@@ -2,15 +2,10 @@
 #include "DelayPlugin/PluginEditor.h"
 
 //==============================================================================
-AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor& p)
-    : AudioProcessorEditor (&p), processorRef (p)
+RasterComponent::RasterComponent (AudioPluginAudioProcessor& p)
+    :  processorRef (p)
 {
     juce::ignoreUnused (processorRef);
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    setSize(800, 600);
-    setResizable(true, true);
-    setResizeLimits(400, 300, 2000, 1500);
 
     juce::AudioProcessorValueTreeState& apvts = processorRef.getAPVTS();
 
@@ -61,11 +56,11 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
         "DIFFUSION", diffusionSlider);
 }
 
-AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
+RasterComponent::~RasterComponent()
 = default;
 
 //==============================================================================
-void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
+void RasterComponent::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     // Background image
@@ -73,7 +68,7 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
     g.drawImageAt(backgroundImage, 0, 0);
 }
 
-void AudioPluginAudioProcessorEditor::resized() {
+void RasterComponent::resized() {
     // Lay out the GUI components
     constexpr int sliderWidth = 80;
     constexpr int sliderHeight = 80;
@@ -124,4 +119,35 @@ void AudioPluginAudioProcessorEditor::resized() {
     diffusionLabel.setBounds(getWidth() / 2 - sliderWidth / 2,
                              getHeight() / 3 - sliderHeight,
                              sliderWidth, sliderHeight);
+}
+
+// Wrapper Implementation
+WrappedAudioProcessorEditor::WrappedAudioProcessorEditor(AudioPluginAudioProcessor& p) :
+    AudioProcessorEditor(p),
+    rasterComponent(p)
+{
+    addAndMakeVisible(rasterComponent);
+
+    /*
+    // Access the component's constrainer, an object that'll impose restrictions
+    // on a components size or position.
+    //
+    // Because getConstrainer returns a raw pointer, we use an if statement to make
+    // sure we're not accessing a nullptr
+    */
+    if (auto* constrainer = getConstrainer())
+    {
+        constrainer->setFixedAspectRatio(static_cast<double> (originalWidth) / static_cast<double> (originalHeight));
+        constrainer->setSizeLimits(originalWidth / 4, originalHeight / 4, originalWidth * 1.5, originalHeight * 1.5);
+    }
+
+    setResizable(true, true);
+    setSize(originalWidth, originalHeight);
+}
+
+void WrappedAudioProcessorEditor::resized()
+{
+    const auto scaleFactor = static_cast<float> (getWidth()) / originalWidth;
+    rasterComponent.setTransform(juce::AffineTransform::scale(scaleFactor, scaleFactor));
+    rasterComponent.setBounds(0, 0, originalWidth, originalHeight);
 }

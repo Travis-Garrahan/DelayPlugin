@@ -5,11 +5,11 @@
 #include "CustomLookAndFeel.h"
 
 //==============================================================================
-class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor
+class RasterComponent final : public juce::Component
 {
 public:
-    explicit AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor&);
-    ~AudioPluginAudioProcessorEditor() override;
+    explicit RasterComponent (AudioPluginAudioProcessor&);
+    ~RasterComponent() override;
 
     //==============================================================================
     void paint (juce::Graphics&) override;
@@ -75,5 +75,16 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> bypassToggleButtonAttachment;
     juce::Label bypassLabel;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RasterComponent)
+};
+
+class WrappedAudioProcessorEditor : public juce::AudioProcessorEditor
+{
+public:
+    WrappedAudioProcessorEditor (AudioPluginAudioProcessor&);
+    void resized() override;
+private:
+    static constexpr int originalWidth { 800 };
+    static constexpr int originalHeight { 600 };
+    RasterComponent rasterComponent;
 };
