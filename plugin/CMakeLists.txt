@@ -28,6 +28,8 @@ juce_add_binary_data(DelayBinaryData
         ${CMAKE_CURRENT_SOURCE_DIR}/src/assets/new-bg.jpg
 )
 
+juce_generate_juce_header(${PROJECT_NAME})
+
 # set source files of plugin project
 set(SOURCE_FILES
         src/PluginEditor.cpp

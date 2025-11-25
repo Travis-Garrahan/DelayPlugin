@@ -128,6 +128,15 @@ WrappedAudioProcessorEditor::WrappedAudioProcessorEditor(AudioPluginAudioProcess
 {
     addAndMakeVisible(rasterComponent);
 
+    // these are needed to save window size
+    juce::PropertiesFile::Options options;
+    options.applicationName = ProjectInfo::projectName;
+    options.commonToAllUsers = true;
+    options.filenameSuffix = "settings";
+    options.osxLibrarySubFolder = "Application Support";
+    applicationProperties.setStorageParameters(options);
+
+
     /*
     // Access the component's constrainer, an object that'll impose restrictions
     // on a components size or position.
@@ -138,16 +147,31 @@ WrappedAudioProcessorEditor::WrappedAudioProcessorEditor(AudioPluginAudioProcess
     if (auto* constrainer = getConstrainer())
     {
         constrainer->setFixedAspectRatio(static_cast<double> (originalWidth) / static_cast<double> (originalHeight));
-        constrainer->setSizeLimits(originalWidth / 4, originalHeight / 4, originalWidth * 1.5, originalHeight * 1.5);
+        constrainer->setSizeLimits(originalWidth / 4,
+            originalHeight / 4,
+            originalWidth * 1.5,
+            originalHeight * 1.5);
+    }
+
+    auto sizeRatio{1.0};
+    if (auto* properties = applicationProperties.getCommonSettings(true))
+    {
+        sizeRatio = properties->getDoubleValue("sizeRatio", 1.0);
     }
 
     setResizable(true, true);
-    setSize(originalWidth, originalHeight);
+    setSize(static_cast<int>(originalWidth * sizeRatio),
+        static_cast<int>(originalHeight * sizeRatio));
 }
 
 void WrappedAudioProcessorEditor::resized()
 {
     const auto scaleFactor = static_cast<float> (getWidth()) / originalWidth;
+    if (auto* properties = applicationProperties.getCommonSettings(true))
+    {
+        properties->setValue("sizeRatio", scaleFactor);
+    }
+
     rasterComponent.setTransform(juce::AffineTransform::scale(scaleFactor, scaleFactor));
     rasterComponent.setBounds(0, 0, originalWidth, originalHeight);
 }

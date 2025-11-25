@@ -2,6 +2,7 @@
 
 #include "PluginProcessor.h"
 #include "BinaryData.h"
+#include <JuceHeader.h>
 #include "CustomLookAndFeel.h"
 
 //==============================================================================
@@ -86,5 +87,7 @@ public:
 private:
     static constexpr int originalWidth { 800 };
     static constexpr int originalHeight { 600 };
+
     RasterComponent rasterComponent;
+    juce::ApplicationProperties applicationProperties;
 };
