@@ -69,25 +69,36 @@ void RasterComponent::paint (juce::Graphics& g)
 }
 
 void RasterComponent::resized() {
-    // Lay out the GUI components
     constexpr int sliderWidth = 80;
     constexpr int sliderHeight = 80;
-    constexpr int labelWidth = 80;
+    constexpr int labelWidth = 500;
     constexpr int labelHeight = 15;
 
-    mixSlider.setBounds(static_cast<int>(getWidth() * 0.15), getHeight() / 2 - sliderHeight, sliderWidth, sliderHeight);
-    mixLabel.setBounds(static_cast<int>(getWidth() * 0.15), getHeight() / 2, labelWidth, labelHeight);
+    placeSliderWithLabel(&mixSlider, &mixLabel,
+        getWidth() / 4 - sliderWidth / 2,
+        getHeight() / 2 - 50,
+        sliderWidth, sliderHeight,
+        labelHeight, "Mix");
 
-    delayTimeSlider.setBounds(static_cast<int>(getWidth() * 0.85) - sliderWidth, getHeight() / 2 - sliderHeight, sliderWidth,
-                              sliderHeight);
-    delayTimeLabel.setBounds(static_cast<int>(getWidth() * 0.85) - sliderWidth, getHeight() / 2, labelWidth, labelHeight);
+    placeSliderWithLabel(&diffusionSlider, &diffusionLabel,
+        getWidth() / 2 - sliderWidth / 2,
+        getHeight() / 3 - sliderHeight - 50,
+        sliderWidth, sliderHeight,
+        labelHeight, "Diffusion");
 
-    feedbackSlider.setBounds(getWidth() / 2 - sliderWidth / 2,
-        getHeight() / 2,
-        sliderWidth, sliderHeight);
-    feedbackLabel.setBounds(getWidth() / 2 - sliderWidth / 2,
-        getHeight() / 2 + sliderHeight,
-        labelWidth, labelHeight);
+    placeSliderWithLabel(&delayTimeSlider, &delayTimeLabel,
+        getWidth() * 0.75 - sliderWidth / 2,
+        getHeight() / 2 - 50,
+        sliderWidth, sliderHeight,
+        labelHeight, "Time");
+
+
+    placeSliderWithLabel(&feedbackSlider, &feedbackLabel,
+        getWidth()/ 2 - sliderWidth / 2,
+        getHeight() / 2 - 50,
+        sliderWidth, sliderHeight,
+        labelHeight, "Feedback");
+
 
     constexpr int toggleWidth = 30;
     constexpr int toggleHeight = 20;
@@ -107,18 +118,11 @@ void RasterComponent::resized() {
                           labelWidth, labelHeight);
 
     loopFilterCutoffSlider.setBounds(static_cast<int>(getWidth() * 0.75),
-                                     static_cast<int>(getHeight() * 0.9) - sliderHeight,
+                                     static_cast<int>(getHeight() * 0.9) - 50,
                                      sliderWidth, sliderHeight);
     loopFilterTypeComboBox.setBounds(static_cast<int>(getWidth() * 0.75),
                                      static_cast<int> (getHeight() * 0.9),
                                      30, 20);
-
-    diffusionSlider.setBounds(getWidth() / 2 - sliderWidth / 2,
-                              getHeight() / 3 - sliderHeight - 50,
-                              sliderWidth, sliderHeight);
-    diffusionLabel.setBounds(getWidth() / 2 - sliderWidth / 2,
-                             getHeight() / 3 - sliderHeight,
-                             sliderWidth, sliderHeight);
 }
 
 // Wrapper Implementation
@@ -135,7 +139,6 @@ WrappedAudioProcessorEditor::WrappedAudioProcessorEditor(AudioPluginAudioProcess
     options.filenameSuffix = "settings";
     options.osxLibrarySubFolder = "Application Support";
     applicationProperties.setStorageParameters(options);
-
 
     /*
     // Access the component's constrainer, an object that'll impose restrictions

@@ -24,9 +24,11 @@ private:
     CustomLookAndFeel customLookAndFeel;
     juce::Image backgroundImage;
 
-    // helper function
+    // helper function to create slider with label
     void createSliderAndLabel(juce::Slider *slider, juce::Label *label, const juce::String &labelText, CustomLookAndFeel &_customLookAndFeel)
     {
+        FontOptions fontOptions(24);
+
         slider->setLookAndFeel(&_customLookAndFeel);
         slider->setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
         slider->setNumDecimalPlacesToDisplay(3);
@@ -35,18 +37,35 @@ private:
 
         label->setText(labelText, juce::dontSendNotification);
         label->setJustificationType(juce::Justification::centred);
+        label->setFont(Font(fontOptions));
         addAndMakeVisible(label);
+
+    }
+
+    // helper function to position slider and labels
+    static void placeSliderWithLabel(juce::Slider* slider, juce::Label* label,
+        int x, int y,
+        int sliderWidth,
+        int sliderHeight,
+        int spacing = 0,
+        const juce::String& labelText = "")
+    {
+        slider->setBounds(x, y, sliderWidth, sliderHeight);
+        label->setBounds(x - 10,
+            y + sliderHeight - spacing,
+            sliderWidth + 20,
+            sliderHeight);
     }
 
     // Mix
     juce::Slider mixSlider;
-    juce::Label mixLabel;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mixSliderAttachment;
+    juce::Label mixLabel;
 
     // Delay
     juce::Slider delayTimeSlider;
-    juce::Label delayTimeLabel;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> delayTimeSliderAttachment;
+    juce::Label delayTimeLabel;
 
     // Feedback
     juce::Slider feedbackSlider;
