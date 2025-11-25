@@ -48,7 +48,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
         "LOOP_FILTER_CUTOFF", loopFilterCutoffSlider);
 
     // Filter type
-    auto* parameter = apvts.getParameter("LOOP_FILTER_TYPE");
+    const auto* parameter = apvts.getParameter("LOOP_FILTER_TYPE");
     loopFilterTypeComboBox.addItemList(parameter->getAllValueStrings(), 1);
 
     addAndMakeVisible(loopFilterTypeComboBox);
@@ -75,23 +75,27 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 
 void AudioPluginAudioProcessorEditor::resized() {
     // Lay out the GUI components
-    int sliderWidth = 80;
-    int sliderHeight = 80;
-    int labelWidth = 80;
-    int labelHeight = 15;
+    constexpr int sliderWidth = 80;
+    constexpr int sliderHeight = 80;
+    constexpr int labelWidth = 80;
+    constexpr int labelHeight = 15;
 
-    mixSlider.setBounds((int) (getWidth() * 0.15), getHeight() / 2 - sliderHeight, sliderWidth, sliderHeight);
-    mixLabel.setBounds((int) (getWidth() * 0.15), getHeight() / 2, labelWidth, labelHeight);
+    mixSlider.setBounds(static_cast<int>(getWidth() * 0.15), getHeight() / 2 - sliderHeight, sliderWidth, sliderHeight);
+    mixLabel.setBounds(static_cast<int>(getWidth() * 0.15), getHeight() / 2, labelWidth, labelHeight);
 
-    delayTimeSlider.setBounds((int) (getWidth() * 0.85) - sliderWidth, getHeight() / 2 - sliderHeight, sliderWidth,
+    delayTimeSlider.setBounds(static_cast<int>(getWidth() * 0.85) - sliderWidth, getHeight() / 2 - sliderHeight, sliderWidth,
                               sliderHeight);
-    delayTimeLabel.setBounds((int) (getWidth() * 0.85) - sliderWidth, getHeight() / 2, labelWidth, labelHeight);
+    delayTimeLabel.setBounds(static_cast<int>(getWidth() * 0.85) - sliderWidth, getHeight() / 2, labelWidth, labelHeight);
 
-    feedbackSlider.setBounds(getWidth() / 2 - sliderWidth / 2, getHeight() / 2, sliderWidth, sliderHeight);
-    feedbackLabel.setBounds(getWidth() / 2 - sliderWidth / 2, getHeight() / 2 + sliderHeight, labelWidth, labelHeight);
+    feedbackSlider.setBounds(getWidth() / 2 - sliderWidth / 2,
+        getHeight() / 2,
+        sliderWidth, sliderHeight);
+    feedbackLabel.setBounds(getWidth() / 2 - sliderWidth / 2,
+        getHeight() / 2 + sliderHeight,
+        labelWidth, labelHeight);
 
-    int toggleWidth = 30;
-    int toggleHeight = 20;
+    constexpr int toggleWidth = 30;
+    constexpr int toggleHeight = 20;
 
     pingPongToggleButton.setBounds(static_cast<int>(getWidth() * 0.15),
                                    static_cast<int>(0.9 * getHeight()),
@@ -111,13 +115,13 @@ void AudioPluginAudioProcessorEditor::resized() {
                                      static_cast<int>(getHeight() * 0.9) - sliderHeight,
                                      sliderWidth, sliderHeight);
     loopFilterTypeComboBox.setBounds(static_cast<int>(getWidth() * 0.75),
-                                     (int) (getHeight() * 0.9),
+                                     static_cast<int> (getHeight() * 0.9),
                                      30, 20);
 
-    diffusionSlider.setBounds(static_cast<int>(getWidth() / 2 - sliderWidth / 2),
-                              static_cast<int>(getHeight() / 3 - sliderHeight) - 50,
+    diffusionSlider.setBounds(getWidth() / 2 - sliderWidth / 2,
+                              getHeight() / 3 - sliderHeight - 50,
                               sliderWidth, sliderHeight);
-    diffusionLabel.setBounds(static_cast<int>(getWidth() / 2 - sliderWidth / 2),
-                             static_cast<int>(getHeight() / 3 - sliderHeight),
+    diffusionLabel.setBounds(getWidth() / 2 - sliderWidth / 2,
+                             getHeight() / 3 - sliderHeight,
                              sliderWidth, sliderHeight);
 }
