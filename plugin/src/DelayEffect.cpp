@@ -30,11 +30,16 @@ DelayEffect::~DelayEffect()
 
 void DelayEffect::initDelayBuffers()
 {
-    int maxDelaySamples = static_cast<int>(MAX_DELAY_SECONDS * m_sampleRate);
+    // Max delay in samples must be rounded up. This will be used to determine 
+    // the size of the delay buffers.
+    int maxDelaySamples = static_cast<int>(
+                                std::ceil(MAX_DELAY_SECONDS * m_sampleRate)); 
 
-    // Find next power of 2 for buffer size
+    // Buffer size must be at least (maxDelaySamples + 1). CircularBuffer also
+    // requires a size that's a power of 2.
+    // Find next power of 2 greater than or equal to (maxDelaySamples + 1)
     int delayBufferSize = 1;
-    while (delayBufferSize < maxDelaySamples)
+    while (delayBufferSize < maxDelaySamples + 1)
         delayBufferSize <<= 1;
 
     m_delayBuffers.clear();
@@ -65,16 +70,17 @@ void DelayEffect::releaseResources()
     m_delayTimeLowPass.clear();
 }
 
-void DelayEffect::setParametersFromAPVTS(juce::AudioProcessorValueTreeState& apvts)
+void DelayEffect::setParametersFromAPVTS(
+        juce::AudioProcessorValueTreeState& apvts)
 {
     // Get current parameter values. These values are read once per block.
-    m_mix = *apvts.getRawParameterValue("MIX");
-    m_feedback = *apvts.getRawParameterValue("FEEDBACK");
-    m_delayTime = *apvts.getRawParameterValue("DELAY_TIME");    
-    m_isPingPongOn = *apvts.getRawParameterValue("IS_PING_PONG_ON");
-    m_isBypassOn = *apvts.getRawParameterValue("IS_BYPASS_ON");
+    m_mix              = *apvts.getRawParameterValue("MIX");
+    m_feedback         = *apvts.getRawParameterValue("FEEDBACK");
+    m_delayTime        = *apvts.getRawParameterValue("DELAY_TIME");    
+    m_isPingPongOn     = *apvts.getRawParameterValue("IS_PING_PONG_ON");
+    m_isBypassOn       = *apvts.getRawParameterValue("IS_BYPASS_ON");
     m_loopFilterCutoff = *apvts.getRawParameterValue("LOOP_FILTER_CUTOFF");
-    m_diffusion = *apvts.getRawParameterValue("DIFFUSION");
+    m_diffusion        = *apvts.getRawParameterValue("DIFFUSION");
 
     auto* loopFilterTypePtr = dynamic_cast<juce::AudioParameterChoice*>(
                                     apvts.getParameter("LOOP_FILTER_TYPE"));
@@ -130,81 +136,82 @@ void DelayEffect::update()
 }
 
 
+// Assumes 2 channels
 void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
 {
     if (m_isBypassOn == true)
         return;
-    
-    auto& delayBufferLeft = m_delayBuffers[0]; 
-    auto& delayBufferRight = m_delayBuffers[1]; 
 
-    // Get left and right audio buffers. Each contains the input data, which 
-    // is processed by overwriting it
-    auto* channelDataLeft = buffer.getWritePointer(0);
-    auto* channelDataRight = buffer.getWritePointer(1);
-
-    // Loop through each sample
-    for (int i = 0; i < buffer.getNumSamples(); ++i)
+    // Loop through each sample (outer loop is through samples instead of
+    // channels so that parameter smoothing only happens once.)
+    for (int sample = 0; sample < buffer.getNumSamples(); sample++)
     {
-        // Get the current input sample for each channel
-        float inputLeft = channelDataLeft[i];
-        float inputRight = channelDataRight[i];
-
         // Apply smoothing to delay time slider value.
         float currentDelayTimeSeconds = m_delayTimeLowPass.getNextSample(
-                                            m_delayTime) / 1000.0f;
+                                            m_delayTime) * 0.001f;
 
-        // Get read index from current delay time.
-        int delayInSamples = static_cast<int>(currentDelayTimeSeconds * m_sampleRate);
+        // Get the current delay in samples. This will be the read index for the 
+        // circular buffers.
+        int delaySamples = static_cast<int>(
+                                    currentDelayTimeSeconds * m_sampleRate);
 
-        // Clamp readIndex to ensure it stays within bounds. 
-        int readIndex = std::clamp(delayInSamples, 0, static_cast<int>(
-                                                delayBufferLeft.getSize() - 1));
-
-        // Get delayed outputs and apply feedback gain.
-        float delayedLeft = m_feedback * delayBufferLeft[readIndex];
-        float delayedRight = m_feedback * delayBufferRight[readIndex];
-
-        // Apply filter to delay output
-        if (m_loopFilterType != 2)
+        // Vectors for temporarily storing the current sample in each channel
+        std::vector<float> inputData(2);
+        std::vector<float> tempData(2);
+        
+        for (int channel = 0; channel < 2; channel++)
         {
-            delayedLeft = m_loopFilters[0].getNextSample(delayedLeft);
-            delayedRight = m_loopFilters[1].getNextSample(delayedRight);
+            // Get the current input sample
+            inputData[channel] = buffer.getWritePointer(channel)[sample];
+
+            // Get delayed output and apply feedback gain
+            tempData[channel] = m_feedback 
+                                    * m_delayBuffers[channel][delaySamples];
+
+            // Apply filter to delay output (value of 2 means no filtering)
+            if (m_loopFilterType != 2)
+            {
+                tempData[channel] = m_loopFilters[channel].getNextSample(
+                                                            tempData[channel]);
+            }
+
+            // Apply diffusion. The diffusion amount is controlled by 
+            // cross-fading between the diffuser input and output
+            tempData[channel] = (1.0f - m_diffusion) * tempData[channel]
+                + m_diffusion * m_diffusers[channel].getNextSample(
+                                                            tempData[channel]);
         }
 
-        // Apply diffusion. The diffusion amount is controlled by cross-fading 
-        // between the diffuser input and output
-        delayedLeft = (1.0f - m_diffusion) * delayedLeft 
-            + m_diffusion * m_diffusers[0].getNextSample(delayedLeft);
-        
-        delayedRight = (1.0f - m_diffusion) * delayedRight 
-            + m_diffusion * m_diffusers[1].getNextSample(delayedRight);
-
-        // Determine feedback configuration 
+        // Determine feedback configuration. This occurs outside of the 
+        // previous loop because the two channels will not be independent if 
+        // ping pong is enabled.
         if (m_isPingPongOn == true)
         {
             // Mix left and right channels to mono.
-            float inputMono = (inputLeft + inputRight) / 2.0f;
+            float inputMono = (inputData[0] + inputData[1]) * 0.5f;
 
             // Feed left and right delay buffers into eachother. 
             // Incomming audio will be fed into the left delay.
-            delayBufferLeft.push(inputMono + delayedRight);
-            delayBufferRight.push(delayedLeft);
+            m_delayBuffers[0].push(inputMono + tempData[1]);
+            m_delayBuffers[1].push(tempData[0]);
         }
         else
         {
             // Independent feedback loop for each channel. 
-            delayBufferLeft.push(inputLeft + delayedLeft);
-            delayBufferRight.push(inputRight + delayedRight);
+            for (int channel = 0; channel < 2; channel++)
+            {
+                m_delayBuffers[channel].push(
+                                    inputData[channel] + tempData[channel]);
+            }
         }
         
         // Get output audio for each channel. Mix dry signal with wet signal             
-        float outputLeft = (1.0f - m_mix) * inputLeft + m_mix * delayedLeft;	    
-        float outputRight = (1.0f - m_mix) * inputRight + m_mix * delayedRight;
-
-        // Write output to the audio buffer
-        channelDataLeft[i] = outputLeft;
-        channelDataRight[i] = outputRight;
+        for (int channel = 0; channel < 2; channel++)
+        {
+            auto* channelData = buffer.getWritePointer(channel);
+            channelData[sample] = (1.0f - m_mix) * inputData[channel] 
+                                            + m_mix * tempData[channel];
+        }
     }
 }
 
