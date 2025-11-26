@@ -2,68 +2,33 @@
 #include "DelayPlugin/PluginEditor.h"
 
 //==============================================================================
-AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor& p)
-    : AudioProcessorEditor (&p), processorRef (p)
+RasterComponent::RasterComponent (AudioPluginAudioProcessor& p)
+    :  processorRef (p)
 {
     juce::ignoreUnused (processorRef);
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-
-    setSize(400, 300);
-    //setSize(400, 500);
 
     juce::AudioProcessorValueTreeState& apvts = processorRef.getAPVTS();
 
     // Delay Time
-    delayTimeSlider.setNumDecimalPlacesToDisplay(0);
-    delayTimeSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    delayTimeSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    addAndMakeVisible(delayTimeSlider);
-
-    // Attach the delay Time slider to the AudioProcessorValueTreeState
+    createSliderAndLabel(&delayTimeSlider, &delayTimeLabel, "Time", customLookAndFeel);
     delayTimeSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
         "DELAY_TIME", delayTimeSlider);
 
-    delayTimeLabel.setText("Time", juce::dontSendNotification);
-    delayTimeLabel.setJustificationType(juce::Justification::centred);
-    addAndMakeVisible(delayTimeLabel);
-    //delayTimeLabel.attachToComponent(&delayTimeSlider, true);
-
     // Feedback
-    feedbackSlider.setNumDecimalPlacesToDisplay(3);
-    feedbackSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    feedbackSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    addAndMakeVisible(feedbackSlider);
-
-    feedbackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
-        "FEEDBACK", feedbackSlider);
-
-    feedbackLabel.setText("Feedback", juce::dontSendNotification);
-    feedbackLabel.setJustificationType(juce::Justification::centred);
-    addAndMakeVisible(feedbackLabel);
+    createSliderAndLabel(&feedbackSlider, &feedbackLabel, "Feedback", customLookAndFeel);
+    feedbackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "FEEDBACK", feedbackSlider);
 
     // Mix
-
-    mixSlider.setNumDecimalPlacesToDisplay(3);
-    mixSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    mixSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    addAndMakeVisible(mixSlider);
-
+    createSliderAndLabel(&mixSlider, &mixLabel, "Mix", customLookAndFeel);
     mixSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
         "MIX", mixSlider);
-    mixLabel.setText("Mix", juce::dontSendNotification);
-    mixLabel.setJustificationType(juce::Justification::centred);
-    addAndMakeVisible(mixLabel);
-    //mixLabel.attachToComponent(&mixSlider, true);
 
     addAndMakeVisible(pingPongToggleButton);
     pingPongToggleButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts,
         "IS_PING_PONG_ON", pingPongToggleButton);
 
     pingPongLabel.setText("Ping Pong", juce::dontSendNotification);
-    //pingPongLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(pingPongLabel);
-
 
     addAndMakeVisible(bypassToggleButton);
     bypassToggleButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts,
@@ -72,81 +37,145 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     bypassLabel.setText("Bypass", juce::dontSendNotification);
     addAndMakeVisible(bypassLabel);
 
-
     // Cutoff
-    loopFilterCutoffSlider.setNumDecimalPlacesToDisplay(0);
-    loopFilterCutoffSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    loopFilterCutoffSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    //loopFilterCutoffSlider.setSkewFactorFromMidPoint(500);
-    addAndMakeVisible(loopFilterCutoffSlider);
-    loopFilterCutoffSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, 
+    createSliderAndLabel(&loopFilterCutoffSlider, &loopFilterCutoffLabel, "Loop Filter", customLookAndFeel);
+    loopFilterCutoffSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
         "LOOP_FILTER_CUTOFF", loopFilterCutoffSlider);
 
-    // Filter type
-    auto* parameter = apvts.getParameter("LOOP_FILTER_TYPE");
-    loopFilterTypeComboBox.addItemList(parameter->getAllValueStrings(), 1);
+
 
     addAndMakeVisible(loopFilterTypeComboBox);
-    loopFilterTypeComboBoxAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts, 
+    loopFilterTypeComboBoxAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts,
         "LOOP_FILTER_TYPE", loopFilterTypeComboBox);
+    // Filter type
+    const auto* parameter = apvts.getParameter("LOOP_FILTER_TYPE");
+    loopFilterTypeComboBox.addItemList(parameter->getAllValueStrings(), 1);
 
     // Diffusion slider
-    diffusionSlider.setNumDecimalPlacesToDisplay(0);
-    diffusionSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    diffusionSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    addAndMakeVisible(diffusionSlider);
+    createSliderAndLabel(&diffusionSlider, &diffusionLabel, "Diffusion", customLookAndFeel);
     diffusionSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
         "DIFFUSION", diffusionSlider);
-
 }
 
-AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
-{
-}
+RasterComponent::~RasterComponent()
+= default;
 
 //==============================================================================
-void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
+void RasterComponent::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     // Background image
-    const int backgroundImageDataSize = BinaryData::background_jpgSize;
-    backgroundImage = juce::ImageCache::getFromMemory(BinaryData::background_jpg, backgroundImageDataSize);
+    backgroundImage = juce::ImageCache::getFromMemory(BinaryData::newbg_jpg, BinaryData::newbg_jpgSize);
     g.drawImageAt(backgroundImage, 0, 0);
 }
 
-void AudioPluginAudioProcessorEditor::resized()
-{
-    // Lay out the GUI components
-    int sliderWidth = 80;
-    int sliderHeight = 80;
-    int labelWidth = 80;
-    int labelHeight = 15;
+void RasterComponent::resized() {
+    constexpr int sliderWidth = 80;
+    constexpr int sliderHeight = 80;
+    constexpr int labelWidth = 500;
+    constexpr int labelHeight = 15;
 
-    // setBound(int x, int y, int width, int height)
-    mixSlider.setBounds( (int)(getWidth() * 0.15), getHeight() / 2 - sliderHeight, sliderWidth, sliderHeight);
-    mixLabel.setBounds( (int)(getWidth() * 0.15), getHeight() / 2, labelWidth, labelHeight);
-    
-    delayTimeSlider.setBounds((int)(getWidth() * 0.85) - sliderWidth, getHeight() / 2 - sliderHeight, sliderWidth, sliderHeight);
-    delayTimeLabel.setBounds((int)(getWidth() * 0.85) - sliderWidth, getHeight() / 2, labelWidth, labelHeight);
+    placeSliderWithLabel(&mixSlider, &mixLabel,
+        getWidth() / 4 - sliderWidth / 2,
+        getHeight() / 2 - 50,
+        sliderWidth, sliderHeight,
+        labelHeight, "Mix");
 
-    feedbackSlider.setBounds(getWidth() / 2 - sliderWidth / 2, getHeight() / 2, sliderWidth, sliderHeight);
-    feedbackLabel.setBounds(getWidth() / 2 - sliderWidth / 2, getHeight() / 2 + sliderHeight, labelWidth, labelHeight);
+    placeSliderWithLabel(&diffusionSlider, &diffusionLabel,
+        getWidth() / 2 - sliderWidth / 2,
+        getHeight() / 3 - sliderHeight - 50,
+        sliderWidth, sliderHeight,
+        labelHeight, "Diffusion");
+
+    placeSliderWithLabel(&delayTimeSlider, &delayTimeLabel,
+        static_cast<int>(getWidth() * 0.75 - sliderWidth / 2),
+        getHeight() / 2 - 50,
+        sliderWidth, sliderHeight,
+        labelHeight, "Time");
 
 
-    int toggleWidth = 30;
-    int toggleHeight = 20;
+    placeSliderWithLabel(&feedbackSlider, &feedbackLabel,
+        getWidth()/ 2 - sliderWidth / 2,
+        getHeight() / 2 - 50,
+        sliderWidth, sliderHeight,
+        labelHeight, "Feedback");
 
-    //pingPongToggleButton.setBounds(0, (int)(0.9 * getHeight()), 20, 20);
-    pingPongToggleButton.setBounds((int)(getWidth() * 0.15), (int)(0.9 * getHeight()), toggleWidth, toggleHeight);
-    pingPongLabel.setBounds((int)(getWidth() * 0.15), (int)(0.9 * getHeight())- 20, labelWidth, labelHeight);
 
-    bypassToggleButton.setBounds((int)(getWidth() * 0.5 - toggleWidth), (int)(getHeight() * 0.9), toggleWidth, toggleHeight);
-    bypassLabel.setBounds((int)(getWidth() * 0.5 - toggleWidth), (int)(getHeight() * 0.9) - 20, labelWidth, labelHeight);
+    constexpr int toggleWidth = 30;
+    constexpr int toggleHeight = 20;
 
-    loopFilterCutoffSlider.setBounds((int)(getWidth() * 0.75), (int)(getHeight() * 0.9) - sliderHeight, sliderWidth, sliderHeight);
+    pingPongToggleButton.setBounds(static_cast<int>(getWidth() * 0.15),
+                                   static_cast<int>(0.9 * getHeight()),
+                                   toggleWidth, toggleHeight);
+    pingPongLabel.setBounds(static_cast<int>(getWidth() * 0.15),
+                            static_cast<int>(0.9 * getHeight()) - 20,
+                            labelWidth, labelHeight);
 
-    loopFilterTypeComboBox.setBounds((int)(getWidth() * 0.75), (int)(getHeight() * 0.9), 30, 20);
+    bypassToggleButton.setBounds(static_cast<int>(getWidth() * 0.5 - toggleWidth),
+                                 static_cast<int>(getHeight() * 0.9),
+                                 toggleWidth, toggleHeight);
+    bypassLabel.setBounds(static_cast<int>(getWidth() * 0.5 - toggleWidth),
+                          static_cast<int>(getHeight() * 0.9) - 20,
+                          labelWidth, labelHeight);
 
-    diffusionSlider.setBounds(static_cast<int>(getWidth() / 2 - sliderWidth / 2), static_cast<int>(getHeight() / 2 - sliderHeight), sliderWidth, sliderHeight);
+    loopFilterCutoffSlider.setBounds(static_cast<int>(getWidth() * 0.75),
+                                     static_cast<int>(getHeight() * 0.9) - 50,
+                                     sliderWidth, sliderHeight);
+    loopFilterTypeComboBox.setBounds(static_cast<int>(getWidth() * 0.75),
+                                     static_cast<int> (getHeight() * 0.9),
+                                     30, 20);
 }
 
+// Wrapper Implementation
+WrappedAudioProcessorEditor::WrappedAudioProcessorEditor(AudioPluginAudioProcessor& p) :
+    AudioProcessorEditor(p),
+    rasterComponent(p)
+{
+    addAndMakeVisible(rasterComponent);
+
+    // these are needed to save window size
+    juce::PropertiesFile::Options options;
+    options.applicationName = ProjectInfo::projectName;
+    options.commonToAllUsers = true;
+    options.filenameSuffix = "settings";
+    options.osxLibrarySubFolder = "Application Support";
+    applicationProperties.setStorageParameters(options);
+
+    /*
+    // Access the component's constrainer, an object that'll impose restrictions
+    // on a components size or position.
+    //
+    // Because getConstrainer returns a raw pointer, we use an if statement to make
+    // sure we're not accessing a nullptr
+    */
+    if (auto* constrainer = getConstrainer())
+    {
+        constrainer->setFixedAspectRatio(static_cast<double> (originalWidth) / static_cast<double> (originalHeight));
+        constrainer->setSizeLimits(originalWidth / 4,
+            originalHeight / 4,
+            static_cast<int>(originalWidth * 1.5),
+            static_cast<int>(originalHeight * 1.5));
+    }
+
+    auto sizeRatio{1.0};
+    if (auto* properties = applicationProperties.getCommonSettings(true))
+    {
+        sizeRatio = properties->getDoubleValue("sizeRatio", 1.0);
+    }
+
+    setResizable(true, true);
+    setSize(static_cast<int>(originalWidth * sizeRatio),
+        static_cast<int>(originalHeight * sizeRatio));
+}
+
+void WrappedAudioProcessorEditor::resized()
+{
+    const auto scaleFactor = static_cast<float> (getWidth()) / originalWidth;
+    if (auto* properties = applicationProperties.getCommonSettings(true))
+    {
+        properties->setValue("sizeRatio", scaleFactor);
+    }
+
+    rasterComponent.setTransform(juce::AffineTransform::scale(scaleFactor, scaleFactor));
+    rasterComponent.setBounds(0, 0, originalWidth, originalHeight);
+}
