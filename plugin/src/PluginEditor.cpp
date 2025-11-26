@@ -16,7 +16,7 @@ RasterComponent::RasterComponent (AudioPluginAudioProcessor& p)
 
     // Feedback
     createSliderAndLabel(&feedbackSlider, &feedbackLabel, "Feedback", customLookAndFeel);
-    feedbackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "Feedback", feedbackSlider);
+    feedbackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "FEEDBACK", feedbackSlider);
 
     // Mix
     createSliderAndLabel(&mixSlider, &mixLabel, "Mix", customLookAndFeel);
@@ -42,13 +42,14 @@ RasterComponent::RasterComponent (AudioPluginAudioProcessor& p)
     loopFilterCutoffSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
         "LOOP_FILTER_CUTOFF", loopFilterCutoffSlider);
 
-    // Filter type
-    const auto* parameter = apvts.getParameter("LOOP_FILTER_TYPE");
-    loopFilterTypeComboBox.addItemList(parameter->getAllValueStrings(), 1);
+
 
     addAndMakeVisible(loopFilterTypeComboBox);
     loopFilterTypeComboBoxAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts,
         "LOOP_FILTER_TYPE", loopFilterTypeComboBox);
+    // Filter type
+    const auto* parameter = apvts.getParameter("LOOP_FILTER_TYPE");
+    loopFilterTypeComboBox.addItemList(parameter->getAllValueStrings(), 1);
 
     // Diffusion slider
     createSliderAndLabel(&diffusionSlider, &diffusionLabel, "Diffusion", customLookAndFeel);
@@ -87,7 +88,7 @@ void RasterComponent::resized() {
         labelHeight, "Diffusion");
 
     placeSliderWithLabel(&delayTimeSlider, &delayTimeLabel,
-        getWidth() * 0.75 - sliderWidth / 2,
+        static_cast<int>(getWidth() * 0.75 - sliderWidth / 2),
         getHeight() / 2 - 50,
         sliderWidth, sliderHeight,
         labelHeight, "Time");
@@ -152,8 +153,8 @@ WrappedAudioProcessorEditor::WrappedAudioProcessorEditor(AudioPluginAudioProcess
         constrainer->setFixedAspectRatio(static_cast<double> (originalWidth) / static_cast<double> (originalHeight));
         constrainer->setSizeLimits(originalWidth / 4,
             originalHeight / 4,
-            originalWidth * 1.5,
-            originalHeight * 1.5);
+            static_cast<int>(originalWidth * 1.5),
+            static_cast<int>(originalHeight * 1.5));
     }
 
     auto sizeRatio{1.0};
