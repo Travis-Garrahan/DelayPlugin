@@ -23,25 +23,32 @@ juce_add_plugin(${PROJECT_NAME}
 # this will auto generate the binarydata.h juce header file in the build folder
 juce_add_binary_data(DelayBinaryData
     SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/assets/background.jpg
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/assets/knob.svg
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/assets/Manbow\ Clear.otf
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/assets/new-bg.jpg
 )
 
+juce_generate_juce_header(${PROJECT_NAME})
+
 # set source files of plugin project
-set(SOURCE_FILES 
-        src/PluginEditor.cpp 
-        src/PluginProcessor.cpp 
+set(SOURCE_FILES
+        src/PluginEditor.cpp
+        src/PluginProcessor.cpp
         src/DelayEffect.cpp
+        src/CustomLookAndFeel.cpp
 )
 
 # optional; includes header files in project files tree in Visual studio
-set(HEADER_FILES 
-        ${INCLUDE_DIR}/PluginEditor.h 
-        ${INCLUDE_DIR}/PluginProcessor.h 
-        ${INCLUDE_DIR}/DSP/DelayEffect.h 
-        ${INCLUDE_DIR}/DSP/CircularBuffer.h 
+set(HEADER_FILES
+        ${INCLUDE_DIR}/PluginEditor.h
+        ${INCLUDE_DIR}/PluginProcessor.h
+        ${INCLUDE_DIR}/DSP/DelayEffect.h
+        ${INCLUDE_DIR}/DSP/CircularBuffer.h
         ${INCLUDE_DIR}/DSP/OnePole.h
         ${INCLUDE_DIR}/DSP/Schroeder.h
         ${INCLUDE_DIR}/DSP/Diffuser.h
         ${INCLUDE_DIR}/DSP/IAudioFilter.h
+        ${INCLUDE_DIR}/CustomLookAndFeel.h
 )
 
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCE_FILES} ${HEADER_FILES})
