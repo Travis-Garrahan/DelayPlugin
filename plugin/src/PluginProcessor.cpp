@@ -75,7 +75,7 @@ void AudioPluginAudioProcessor::setCurrentProgram (int index)
 const juce::String AudioPluginAudioProcessor::getProgramName (int index)
 {
     juce::ignoreUnused (index);
-    return {};
+    return { };
 }
 
 void AudioPluginAudioProcessor::changeProgramName (int index, const juce::String& newName)
@@ -87,7 +87,7 @@ void AudioPluginAudioProcessor::changeProgramName (int index, const juce::String
 void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     // Initialization before playback 
-    m_delayEffect.prepareToPlay(sampleRate);
+    m_delayEffect.prepareToPlay(static_cast<float>(sampleRate));
     
     juce::ignoreUnused(samplesPerBlock);
 }
@@ -132,6 +132,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     m_delayEffect.setParametersFromAPVTS(m_apvts);
     m_delayEffect.update();
 
+    // Delay effect requires two audio channels
     if (buffer.getNumChannels() == 2)
         m_delayEffect.processAudioBuffer(buffer);
 }
@@ -177,21 +178,63 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     // List of ranged audio parameters 
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params; 
 
-    // AudioParameterFloat args: String parameterID, String parameterName, float minValue, float maxValue, float defaultValue
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("DELAY_TIME", "Time", 1.f, 1000.f, 500.f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("FEEDBACK", "Feedback", 0.f, 0.99f, 0.5f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("MIX", "Mix", 0.f, 1.f, 0.5f));
-    params.push_back(std::make_unique<juce::AudioParameterBool>("IS_PING_PONG_ON", "Ping Pong", false));
-    params.push_back(std::make_unique<juce::AudioParameterBool>("IS_BYPASS_ON", "Bypass", false));
-    
-    // For logarithmic slider that works with APVTS, need to use a NormalisableRange
-    juce::NormalisableRange<float> loopFilterCutoffRange(0.0f, 20000.0f);
-    loopFilterCutoffRange.setSkewForCentre(500.0f); // 1000
-    
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("LOOP_FILTER_CUTOFF", "Cutoff", loopFilterCutoffRange, 1000.f)); 
-    params.push_back(std::make_unique<juce::AudioParameterChoice>("LOOP_FILTER_TYPE", "Filter Type", juce::StringArray{"Low Pass", "High Pass", "None"}, 2));
+    // AudioParameterFloat args: String parameterID, String parameterName, 
+    // float minValue, float maxValue, float defaultValue
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+                "DELAY_TIME", 
+                "Time", 
+                1.f, 
+                1000.f, 
+                500.f));
 
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("DIFFUSION", "Diffusion", 0.0f, 1.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+                "FEEDBACK", 
+                "Feedback", 
+                0.f, 
+                0.99f, 
+                0.5f));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+                "MIX", 
+                "Mix", 
+                0.f, 
+                1.f, 
+                0.5f));
+
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+                "IS_PING_PONG_ON", 
+                "Ping Pong", 
+                false));
+
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+                "IS_BYPASS_ON", 
+                "Bypass", 
+                false));
+    
+    // Cutoff frequency slider requires a logarithmic slider.
+    // For logarithmic slider that works with APVTS, need to use a 
+    // NormalisableRange with a skew factor.
+    juce::NormalisableRange<float> loopFilterCutoffRange(0.0f, 20000.0f);
+    loopFilterCutoffRange.setSkewForCentre(500.0f); 
+    
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+                "LOOP_FILTER_CUTOFF", 
+                "Cutoff", 
+                loopFilterCutoffRange, 
+                1000.f)); 
+
+    params.push_back(std::make_unique<juce::AudioParameterChoice>(
+                "LOOP_FILTER_TYPE", 
+                "Filter Type", 
+                juce::StringArray{"Low Pass", "High Pass", "None"}, 
+                2));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+                "DIFFUSION", 
+                "Diffusion", 
+                0.0f, 
+                1.0f, 
+                0.0f));
 
     return { params.begin(), params.end() };
 }

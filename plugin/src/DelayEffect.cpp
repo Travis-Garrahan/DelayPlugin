@@ -12,6 +12,10 @@ DelayEffect::DelayEffect() : m_sampleRate{}, m_delayTime{}, m_feedback{},
 
     for (int channel = 0; channel < 2; channel++)
     {
+        // Delay buffers are initialized with a size of 1024, but will be 
+        // resized once the sample rate is provided in prepareToPlay()
+        m_delayBuffers.emplace_back(1024, 0.0f);
+        
         m_loopFilters.emplace_back(); 
 
         // Diffuser delay lengths based on Freeverb 
@@ -28,39 +32,28 @@ DelayEffect::~DelayEffect()
 }
 
 
-void DelayEffect::initDelayBuffers()
+void DelayEffect::prepareToPlay(float sampleRate)
 {
+    m_sampleRate = sampleRate;
+
+    m_delayTimeLowPass.setSampleRate(sampleRate);
+    
+    for (auto& filter : m_loopFilters)
+        filter.setSampleRate(sampleRate);
+
     // Max delay in samples must be rounded up. This will be used to determine 
     // the size of the delay buffers.
     int maxDelaySamples = static_cast<int>(
-                                std::ceil(MAX_DELAY_SECONDS * m_sampleRate)); 
+                                std::ceil(MAX_DELAY_SECONDS * sampleRate)); 
 
     // Buffer size must be at least (maxDelaySamples + 1). CircularBuffer also
     // requires a size that's a power of 2.
-    // Find next power of 2 greater than or equal to (maxDelaySamples + 1)
     int delayBufferSize = 1;
     while (delayBufferSize < maxDelaySamples + 1)
         delayBufferSize <<= 1;
 
-    m_delayBuffers.clear();
-    m_delayBuffers.reserve(2);
-    for (int ch = 0; ch < 2; ++ch)
-        m_delayBuffers.emplace_back(delayBufferSize, 0.0f);
-}
-
-
-void DelayEffect::prepareToPlay(double sampleRate)
-{
-    m_sampleRate = sampleRate;
-
-    m_delayTimeLowPass.setSampleRate(static_cast<float>(sampleRate));
-    
-    for (auto& filter : m_loopFilters)
-    {
-        filter.setSampleRate(static_cast<float>(sampleRate));
-    }
-
-    initDelayBuffers();
+    for (auto& delayBuffer : m_delayBuffers)
+        delayBuffer.resize(delayBufferSize);
 }
 
 
@@ -69,6 +62,7 @@ void DelayEffect::releaseResources()
     clear();
     m_delayTimeLowPass.clear();
 }
+
 
 void DelayEffect::setParametersFromAPVTS(
         juce::AudioProcessorValueTreeState& apvts)
@@ -142,6 +136,10 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
     if (m_isBypassOn == true)
         return;
 
+    // Vectors for temporarily storing the current sample in each channel
+    std::vector<float> inputData(2);
+    std::vector<float> tempData(2);
+
     // Loop through each sample (outer loop is through samples instead of
     // channels so that parameter smoothing only happens once.)
     for (int sample = 0; sample < buffer.getNumSamples(); sample++)
@@ -155,10 +153,6 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
         int delaySamples = static_cast<int>(
                                     currentDelayTimeSeconds * m_sampleRate);
 
-        // Vectors for temporarily storing the current sample in each channel
-        std::vector<float> inputData(2);
-        std::vector<float> tempData(2);
-        
         for (int channel = 0; channel < 2; channel++)
         {
             // Get the current input sample
@@ -205,7 +199,7 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
             }
         }
         
-        // Get output audio for each channel. Mix dry signal with wet signal             
+        // Write output audio for each channel. Mix dry signal with wet signal             
         for (int channel = 0; channel < 2; channel++)
         {
             auto* channelData = buffer.getWritePointer(channel);

@@ -12,7 +12,7 @@ class DelayEffect
 private:
     static constexpr float MAX_DELAY_SECONDS = 2.0f;
     
-    double m_sampleRate; 
+    float m_sampleRate; 
     float m_delayTime;
     float m_feedback;
     float m_mix;
@@ -33,13 +33,12 @@ private:
 
     OnePole<float> m_delayTimeLowPass; 
     
-    void initDelayBuffers();
     void clear();
     
 public:
     DelayEffect();
     ~DelayEffect();
-    void prepareToPlay(double sampleRate);
+    void prepareToPlay(float sampleRate);
     void releaseResources();
     void setParametersFromAPVTS(juce::AudioProcessorValueTreeState& apvts);
     void update();
