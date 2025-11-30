@@ -38,15 +38,14 @@ RasterComponent::RasterComponent (AudioPluginAudioProcessor& p)
     addAndMakeVisible(bypassLabel);
 
     // Cutoff
-    createSliderAndLabel(&loopFilterCutoffSlider, &loopFilterCutoffLabel, "Loop Filter", customLookAndFeel);
+    createSliderAndLabel(&loopFilterCutoffSlider, &loopFilterCutoffLabel, "Filter Cutoff", customLookAndFeel);
     loopFilterCutoffSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts,
         "LOOP_FILTER_CUTOFF", loopFilterCutoffSlider);
-
-
-
+    // Cutoff Combobox
     addAndMakeVisible(loopFilterTypeComboBox);
     loopFilterTypeComboBoxAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(apvts,
         "LOOP_FILTER_TYPE", loopFilterTypeComboBox);
+
     // Filter type
     const auto* parameter = apvts.getParameter("LOOP_FILTER_TYPE");
     loopFilterTypeComboBox.addItemList(parameter->getAllValueStrings(), 1);
@@ -77,53 +76,65 @@ void RasterComponent::resized() {
 
     placeSliderWithLabel(&mixSlider, &mixLabel,
         getWidth() / 4 - sliderWidth / 2,
-        getHeight() / 2 - 50,
+        getHeight() / 2 + 50,
         sliderWidth, sliderHeight,
         labelHeight, "Mix");
 
     placeSliderWithLabel(&diffusionSlider, &diffusionLabel,
         getWidth() / 2 - sliderWidth / 2,
-        getHeight() / 3 - sliderHeight - 50,
+        getHeight() / 3 - sliderHeight + 25,
         sliderWidth, sliderHeight,
         labelHeight, "Diffusion");
 
     placeSliderWithLabel(&delayTimeSlider, &delayTimeLabel,
         static_cast<int>(getWidth() * 0.75 - sliderWidth / 2),
-        getHeight() / 2 - 50,
+        getHeight() / 2 + 50,
         sliderWidth, sliderHeight,
         labelHeight, "Time");
 
 
     placeSliderWithLabel(&feedbackSlider, &feedbackLabel,
         getWidth()/ 2 - sliderWidth / 2,
-        getHeight() / 2 - 50,
+        getHeight() / 2 + 50,
         sliderWidth, sliderHeight,
         labelHeight, "Feedback");
 
+    placeSliderWithLabel(&loopFilterCutoffSlider, &loopFilterCutoffLabel,
+                         getWidth() / 6 - sliderWidth / 2,
+                         getHeight() / 6 - 50,
+                         sliderWidth, sliderHeight,
+                         labelHeight, "Cutoff");
 
-    constexpr int toggleWidth = 30;
+    constexpr int toggleWidth = 60;
     constexpr int toggleHeight = 20;
 
-    pingPongToggleButton.setBounds(static_cast<int>(getWidth() * 0.15),
-                                   static_cast<int>(0.9 * getHeight()),
+    constexpr int pingPongLabelY = 100;
+    constexpr int pingPongLabelX = 650;
+    constexpr int pingPongButtonYOffset = 25;
+    constexpr int pingPongButtonY = pingPongLabelY + pingPongButtonYOffset;
+
+
+
+    loopFilterTypeComboBox.setBounds(getWidth() / 6 - sliderWidth / 2,
+                                     getHeight() / 6 + 90,
+                                     toggleWidth, toggleHeight);
+
+    pingPongToggleButton.setBounds(pingPongLabelX,
+                                   pingPongButtonY,
                                    toggleWidth, toggleHeight);
-    pingPongLabel.setBounds(static_cast<int>(getWidth() * 0.15),
-                            static_cast<int>(0.9 * getHeight()) - 20,
+    pingPongLabel.setBounds(pingPongLabelX,
+                            pingPongLabelY,
                             labelWidth, labelHeight);
 
     bypassToggleButton.setBounds(static_cast<int>(getWidth() * 0.5 - toggleWidth),
                                  static_cast<int>(getHeight() * 0.9),
                                  toggleWidth, toggleHeight);
+
     bypassLabel.setBounds(static_cast<int>(getWidth() * 0.5 - toggleWidth),
                           static_cast<int>(getHeight() * 0.9) - 20,
                           labelWidth, labelHeight);
 
-    loopFilterCutoffSlider.setBounds(static_cast<int>(getWidth() * 0.75),
-                                     static_cast<int>(getHeight() * 0.9) - 50,
-                                     sliderWidth, sliderHeight);
-    loopFilterTypeComboBox.setBounds(static_cast<int>(getWidth() * 0.75),
-                                     static_cast<int> (getHeight() * 0.9),
-                                     30, 20);
+
 }
 
 // Wrapper Implementation

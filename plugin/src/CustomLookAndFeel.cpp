@@ -7,7 +7,6 @@
 CustomLookAndFeel::CustomLookAndFeel()
 {
     setDefaultSansSerifTypeface(customTypeface);
-    
 
     setDefaultLookAndFeel(this);
     knobDrawable = juce::Drawable::createFromImageData(BinaryData::knob_svg, BinaryData::knob_svgSize);
