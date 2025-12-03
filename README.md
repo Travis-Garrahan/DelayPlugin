@@ -1,17 +1,15 @@
-[How to build] (https://github.com/user-attachments/files/23893658/How.to.build.md)
-**Windows** 
+# How to build
+## Windows 
 
-**Method 1: Download .exe from GitHub:**  
+### Method 1: Download .exe from GitHub:  
 [https://github.com/Travis-Garrahan/DelayPlugin/releases/tag/Alpha](https://github.com/Travis-Garrahan/DelayPlugin/releases/tag/Alpha)
 
-**Method 2: Build from source on Windows:**  
+### Method 2: Build from source on Windows:  
 Prerequisites:
-
 - CMake [https://cmake.org/download/](https://cmake.org/download/)   
 - MSVC compiler/ dev tools
 
 Run PowerShell as Admin:
-
 - cd to project directory  
 - Run cmake \-S . \-B build  
 - Run cmake \--build build  
@@ -20,9 +18,9 @@ Run PowerShell as Admin:
 
 ---
 
-**MacOS**
+## MacOS
 
-**Method 1: Download app bundle from GitHub:**  
+### Method 1: Download app bundle from GitHub:  
 [https://github.com/Travis-Garrahan/DelayPlugin/releases/tag/MacOS\_alpha](https://github.com/Travis-Garrahan/DelayPlugin/releases/tag/MacOS_alpha)
 
 \*\*This is not signed with an Apple Developer ID, to run:
@@ -33,15 +31,12 @@ Run PowerShell as Admin:
 
 You should then be able to open the app from finder.
 
-**Method 2: Build from source on MacOS:**  
+### Method 2: Build from source on MacOS: 
 Prerequisites:
-
 - CMake [https://cmake.org/download/](https://cmake.org/download/)  
 - Clang/ gcc compiler
 
-
 In Terminal:
-
 - cd to project directory  
 - Run cmake \-S . \-B build  
 - Run cmake \--build build  
