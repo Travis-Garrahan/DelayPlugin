@@ -1,4 +1,4 @@
-[How to build.md](https://github.com/user-attachments/files/23893658/How.to.build.md)
+[How to build] (https://github.com/user-attachments/files/23893658/How.to.build.md)
 **Windows** 
 
 **Method 1: Download .exe from GitHub:**  
