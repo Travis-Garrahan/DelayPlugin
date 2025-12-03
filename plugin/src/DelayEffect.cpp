@@ -1,3 +1,13 @@
+///
+///     @file DelayEffect.cpp
+///     @brief Audio delay effect.
+///     @author Russell Brown
+///     @date December 2, 2025
+///
+///     This class implements an audio delay effect, designed for use 
+///     within a juce::AudioProcessor. 
+///
+
 #include "DelayPlugin/DSP/DelayEffect.h"
 #include <algorithm>
 
@@ -32,6 +42,7 @@ DelayEffect::~DelayEffect()
 }
 
 
+// Initialize before playback begins
 void DelayEffect::prepareToPlay(float sampleRate)
 {
     m_sampleRate = sampleRate;
@@ -48,6 +59,8 @@ void DelayEffect::prepareToPlay(float sampleRate)
 
     // Buffer size must be at least (maxDelaySamples + 1). CircularBuffer also
     // requires a size that's a power of 2.
+    // (method for finding the next power of 2 was originally implemented by 
+    // Travis Garrahan)
     int delayBufferSize = 1;
     while (delayBufferSize < maxDelaySamples + 1)
         delayBufferSize <<= 1;
@@ -57,6 +70,7 @@ void DelayEffect::prepareToPlay(float sampleRate)
 }
 
 
+// Called after playback stops
 void DelayEffect::releaseResources()
 {
     clear();
@@ -64,10 +78,12 @@ void DelayEffect::releaseResources()
 }
 
 
+// Set parameter values from a juce::AudioProcessorValueTreeState. This will be
+// called once per block.
 void DelayEffect::setParametersFromAPVTS(
         juce::AudioProcessorValueTreeState& apvts)
 {
-    // Get current parameter values. These values are read once per block.
+    // Get current parameter values. 
     m_mix              = *apvts.getRawParameterValue("MIX");
     m_feedback         = *apvts.getRawParameterValue("FEEDBACK");
     m_delayTime        = *apvts.getRawParameterValue("DELAY_TIME");    
@@ -83,6 +99,8 @@ void DelayEffect::setParametersFromAPVTS(
 }
 
 
+// Update state from parameters. This should be called after calling
+// setParametersFromAPVTS().
 void DelayEffect::update()
 {
     // Check if toggle values changed. Clear delay buffers if so
@@ -130,7 +148,8 @@ void DelayEffect::update()
 }
 
 
-// Assumes 2 channels
+// Process a block of audio data. 2-channel audio is assumed (this is ensured
+// in the AudioProcessor that calls this method).
 void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
 {
     if (m_isBypassOn == true)
@@ -210,6 +229,7 @@ void DelayEffect::processAudioBuffer(juce::AudioBuffer<float>& buffer)
 }
 
 
+// Clear the state of audio processing objects
 void DelayEffect::clear()
 {
     for (int channel = 0; channel < 2; channel++)

@@ -1,3 +1,20 @@
+///
+///     @file DelayEffect.h
+///     @brief Audio delay effect.
+///     @author Russell Brown
+///     @date December 2, 2025
+///
+///     This class implements an audio delay effect, designed for use 
+///     within a juce::AudioProcessor. 
+///
+///     The following should be called (in order) in the AudioProcessor's
+///     processBlock() method:
+///
+///         DelayEffect::setParametersFromAPVTS(apvts);
+///         DelayEffect::update();
+///         DelayEffect::processAudioBuffer(buffer);
+///
+
 #ifndef DELAY_EFFECT_H
 #define DELAY_EFFECT_H
 
